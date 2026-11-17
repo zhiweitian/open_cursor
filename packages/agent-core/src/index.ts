@@ -19,7 +19,7 @@ export { buildTree } from "./tree.ts";
 export { expandAtMentions } from "./context.ts";
 export { trimChatMessages } from "./contextBudget.ts";
 export { loadTodos, saveTodos, type TodoItem, type TodoStatus } from "./todos.ts";
-export { stageQuestion, switchMode, type AskOption, type StagedQuestion } from "./session.ts";
+export { stageQuestion, switchMode, loadQuestion, loadMode, answerQuestion, sessionContext, type AskOption, type StagedQuestion } from "./session.ts";
 export { replaceNotebookCell } from "./notebook.ts";
 export { completeAt } from "./complete.ts";
 export { fetchUrlText, webSearch } from "./webFetch.ts";

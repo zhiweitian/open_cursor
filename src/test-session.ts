@@ -1,7 +1,7 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { runTool, setWorkspace } from "@opencursor/agent-core";
+import { runTool, sessionContext, setWorkspace } from "@opencursor/agent-core";
 
 let ok = 0;
 let fail = 0;
@@ -43,6 +43,19 @@ try {
 
   const bad = await runTool("switch_mode", { mode: "yolo" }, {});
   assert("rejects unknown mode", bad.includes("agent 或 plan"));
+
+  const answered = await runTool("ask_question", {
+    prompt: "用哪种写法？",
+    options: JSON.stringify([
+      { id: "a", label: "简短" },
+      { id: "b", label: "详细" },
+    ]),
+  }, {});
+  assert("ask again", answered.includes("等待选择"));
+  const { answerQuestion } = await import("@opencursor/agent-core");
+  assert("answer recorded", answerQuestion("a").includes("简短"));
+  assert("question cleared", !existsSync(join(ws, "data", "question.json")));
+  assert("context has choice", sessionContext().includes("简短"));
 } finally {
   rmSync(ws, { recursive: true, force: true });
 }

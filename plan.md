@@ -89,7 +89,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 | WebSearch / WebFetch | `web_fetch` + `web_search` | 完成，已测（搜索需 `OPENCURSOR_SEARCH_URL`） |
 | MCP 动态工具 | `mcp_{server}__{tool}` | 完成，已测（本地 echo server） |
 | Task 子 Agent | `explore_codebase` 只读子 Agent | 完成，已测（`test:explore-loop` mock LLM） |
-| TodoWrite / AskQuestion / SwitchMode | `todo_write`、`ask_question`、`switch_mode` | 完成，已测（选择题只落盘，界面未接） |
+| TodoWrite / AskQuestion / SwitchMode | `todo_write`、`ask_question`、`switch_mode` | 完成，已测（Web 聊天页可点选答案） |
 | Skills | 扫描 `.cursor/skills`、`skills/` 注入 system | 完成，已测 |
 | Rules | `AGENTS.md` + `.cursor/rules` 注入 system | 完成，已测 |
 | Hooks | `loadHooks` + `fireHooks`（pre/post tool、agentStop） | 完成，已测；用户自配 shell |
@@ -237,7 +237,7 @@ fork 自带 Chat/Apply/Checkpoint/MCP，若 **算「可用的类 Cursor 桌面�
 | Web chat mock | `npm run test:web-chat-mock` | 无 Key |
 | CI | `.github/workflows/test.yml` | `build:agent-cli` + `npm test` |
 | Web 审核写 | `npm run test:web-patch-review` | mock `review` |
-| 一键 | `npm test` | `typecheck` + **40 套**（`rg`/bash **可选**，缺则 skip 对应子测） |
+| 一键 | `npm test` | `typecheck` + **41 套**（`rg`/bash **可选**，缺则 skip 对应子测） |
 | 手测 / 风险清单 | **`QA-NOTES.md`** | Agent 不好测项 |
 | Web `/api/*`、扩展 UI | **无** | 曾手动 curl/Agent 测，无 CI |
 | `explore_codebase` **契约** | `npm run test:explore-contract` | 只读工具白名单，无 LLM |

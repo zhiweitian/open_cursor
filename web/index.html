@@ -16,6 +16,7 @@
     <aside id="tree"></aside>
     <main>
       <div id="thread"></div>
+      <div id="session"></div>
       <div id="patches"></div>
       <div class="opts">
         <label><input id="review" type="checkbox" checked /> 写入需审核（diff）</label>
@@ -84,6 +85,30 @@
       thread.scrollTop = thread.scrollHeight;
     }
 
+    async function refreshSession() {
+      const s = await (await fetch("/api/session")).json();
+      const el = $("session");
+      el.innerHTML = "";
+      if (!s.question) return;
+      const p = document.createElement("p");
+      p.textContent = s.question.prompt;
+      el.appendChild(p);
+      for (const o of s.question.options || []) {
+        const b = document.createElement("button");
+        b.className = "ghost";
+        b.textContent = o.label;
+        b.onclick = async () => {
+          await fetch("/api/session/answer", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ optionId: o.id }),
+          });
+          refreshSession();
+        };
+        el.appendChild(b);
+      }
+    }
+
     function renderPatches(patches) {
       patchesEl.innerHTML = "";
       if (!patches?.length) return;
@@ -145,6 +170,7 @@
       $("restore").disabled = !runId;
       add("assistant", j.text, j.steps);
       renderPatches(j.patches);
+      refreshSession();
       $("log").textContent = "";
     }
 
@@ -160,6 +186,7 @@
       $("log").textContent = `已回滚 ${j.restored} 个路径`;
       patchesEl.innerHTML = "";
     };
+    refreshSession();
   </script>
 </body>
 </html>

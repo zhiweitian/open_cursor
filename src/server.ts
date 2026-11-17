@@ -29,6 +29,9 @@ import {
   workspace,
   applyCliMockLlm,
   completeAt,
+  loadQuestion,
+  loadMode,
+  answerQuestion,
 } from "@opencursor/agent-core";
 
 applyCliMockLlm();
@@ -126,6 +129,14 @@ const server = createServer(async (req, res) => {
       }
       applyWriteImmediate(run.id, pathRel, content);
       return send(res, 200, { ok: true, runId: run.id });
+    }
+    if (req.method === "GET" && url.pathname === "/api/session") {
+      return send(res, 200, { mode: loadMode(), question: loadQuestion() });
+    }
+    if (req.method === "POST" && url.pathname === "/api/session/answer") {
+      const body = await readBody(req);
+      const text = answerQuestion(String(body.optionId || ""));
+      return send(res, 200, { ok: !text.startsWith("没有") && !text.startsWith("选项"), text, question: loadQuestion() });
     }
     if (req.method === "POST" && url.pathname === "/api/complete") {
       const body = await readBody(req);

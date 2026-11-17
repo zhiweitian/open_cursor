@@ -36,7 +36,8 @@
 | `test:context-budget` | 单次 run 内丢掉过长的旧消息 |
 | `test:complete` | 文件内标识符补全 |
 | `test:todos` | `todo_write` 替换与 merge |
-| `test:session` | `ask_question` 与 `switch_mode` |
+| `test:session` | `ask_question`、`switch_mode`、记录选择 |
+| `test:web-session` | `GET /api/session` 与回答 |
 | `test:notebook` | `edit_notebook` 改单个单元格 |
 | `test:shell-jobs` | 后台 shell 启动、等待、拦截危险命令 |
 | `test:web-fetch` | 本地 HTTP `web_fetch`，拒绝 file URL |
