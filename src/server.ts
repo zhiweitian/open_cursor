@@ -29,6 +29,7 @@ import {
   workspace,
   applyCliMockLlm,
   completeAt,
+  listSymbols,
   loadQuestion,
   loadMode,
   answerQuestion,
@@ -137,6 +138,11 @@ const server = createServer(async (req, res) => {
       const body = await readBody(req);
       const text = answerQuestion(String(body.optionId || ""));
       return send(res, 200, { ok: !text.startsWith("没有") && !text.startsWith("选项"), text, question: loadQuestion() });
+    }
+    if (req.method === "GET" && url.pathname === "/api/symbols") {
+      const p = url.searchParams.get("path");
+      if (!p) return send(res, 400, { error: "缺少 path" });
+      return send(res, 200, { path: p, symbols: listSymbols(readFileSync(inside(p), "utf8")) });
     }
     if (req.method === "POST" && url.pathname === "/api/complete") {
       const body = await readBody(req);

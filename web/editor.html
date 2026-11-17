@@ -8,7 +8,10 @@
   <style>
     #bar { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); }
     #path { flex: 1; font-family: monospace; font-size: 12px; color: var(--mute); }
-    #editor { height: calc(100vh - 90px); }
+    #wrap { display: flex; height: calc(100vh - 90px); }
+    #outline { width: 200px; overflow: auto; border-right: 1px solid var(--line); font-size: 12px; }
+    #outline button { display: block; width: 100%; text-align: left; background: none; border: 0; color: inherit; padding: 4px 8px; cursor: pointer; font: inherit; }
+    #editor { flex: 1; height: 100%; }
   </style>
 </head>
 <body>
@@ -22,7 +25,10 @@
     <label style="font-size:12px;color:var(--mute)"><input id="review" type="checkbox" checked /> 走 diff 审核</label>
     <span id="log"></span>
   </div>
-  <div id="editor"></div>
+  <div id="wrap">
+    <aside id="outline"></aside>
+    <div id="editor"></div>
+  </div>
   <script>
     const $ = (id) => document.getElementById(id);
     const params = new URLSearchParams(location.search);
@@ -45,6 +51,19 @@
           fontSize: 13,
           inlineSuggest: { enabled: true },
         });
+        const sym = await fetch("/api/symbols?path=" + encodeURIComponent(rel));
+        const symbols = (await sym.json()).symbols || [];
+        $("outline").innerHTML = symbols.map((s) =>
+          `<button type="button" data-line="${s.line}">${s.kind} ${s.name}</button>`
+        ).join("") || `<div style="padding:8px;color:var(--mute)">无符号</div>`;
+        $("outline").onclick = (ev) => {
+          const btn = ev.target.closest("button");
+          if (!btn || !editor) return;
+          const line = Number(btn.dataset.line);
+          editor.setPosition({ lineNumber: line, column: 1 });
+          editor.revealLineInCenter(line);
+          editor.focus();
+        };
         monaco.languages.registerInlineCompletionsProvider(lang, {
           provideInlineCompletions: async (model, position) => {
             const text = model.getValue();

@@ -105,6 +105,10 @@ try {
     });
     const cj = (await complete.json()) as { completion?: string };
     assert("POST /api/complete", complete.status === 200 && cj.completion === "World");
+
+    const symbols = await get("/api/symbols?path=packages/agent-core/src/symbols.ts");
+    const names = ((symbols.json as { symbols?: { name: string }[] }).symbols || []).map((s) => s.name);
+    assert("GET /api/symbols", symbols.status === 200 && names.includes("listSymbols"));
   }
 } finally {
   child?.kill("SIGTERM");

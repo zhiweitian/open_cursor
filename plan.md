@@ -168,7 +168,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
    - agent-core 接入 fork — **大部分完成**（Chat 开关 + IPC + 工具气泡 + diff + 审补丁 + 状态栏；**LLM 流式** stderr→Chat；accept 后重载已开文件；Checkpoint **未统一**）
    - 品牌改为 OpenCursor — 部分完成（`product.json` + 部分 UI；需 `npm run desktop:build` 重打 `.app`）
    - VS Code 扩展 `extension/` — 完成，未测（Agent 逻辑调试）
-   - Monaco Web — 完成，已测（辅助）
+   - Monaco Web — 完成，已测（辅助；左侧符号列表跳转）
 
 6. **Tab 补全**
    - 低延迟小模型，和聊天模型分开 — 未做
@@ -193,7 +193,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 |------|------|------|
 | **plan 里「自研 agent-core MVP」** | **~89%** | 行替换 inline edit、`npm test`（**43 套**）；仍缺 embeddings、小模型补全、外网 MCP |
 | **「一个安装包 = OpenCursor」** | **~58%** | fork Chat agent-core + 补丁/流式/Stop + accept→Checkpoint；与原生 Cursor 壳仍两套 |
-| **相对商业 Cursor 全功能** | **~18%** | 缺 Cloud Agent、Tab 产品化、账号网关、Canvas/语音/Automations、embeddings/符号索引 |
+| **相对商业 Cursor 全功能** | **~18%** | 缺 Cloud Agent、Tab 产品化、账号网关、Canvas/语音/Automations、embeddings |
 
 fork 自带 Chat/Apply/Checkpoint/MCP，若 **算「可用的类 Cursor 桌面」** 约 **~57%**（**CortexIDE 原生为主**，OpenCursor agent-core 为可选第二引擎）。
 

@@ -27,7 +27,7 @@
 | `test:sse` | OpenAI 兼容 SSE 行解析（无网络） |
 | `test:mcp-config` | 默认/落盘 `data/mcp.json` |
 | `test:runs-workspace` | `setWorkspace` 后 runs 落盘位置 |
-| `test:web-api` | 起 server，GET `/api/*`、`/api/file`（无 Key） |
+| `test:web-api` | 起 server，GET `/api/*`、`/api/file`、`/api/symbols`（无 Key） |
 | `test:config-workspace` | `saveConfig` / `publicConfig` 落盘 |
 | `test:file-tools` | read/search_replace/list/glob；grep/codebase **若无 rg 则 skip**；shell **若无 bash 则 skip** |
 | `test:explore-contract` | `EXPLORE_READ_ONLY_TOOLS` 与 builtin 对齐 |
