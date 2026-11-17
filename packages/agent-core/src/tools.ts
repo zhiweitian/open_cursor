@@ -6,6 +6,7 @@ import { isIgnored } from "./ignore.ts";
 import { applyWriteImmediate, stageWrite } from "./runs.ts";
 import { saveTodos, type TodoItem } from "./todos.ts";
 import { stageQuestion, switchMode, type AskOption } from "./session.ts";
+import { replaceNotebookCell } from "./notebook.ts";
 import { workspace } from "./workspace.ts";
 
 export { workspace };
@@ -179,6 +180,23 @@ export const builtinToolDefs = [
   {
     type: "function" as const,
     function: {
+      name: "edit_notebook",
+      description: "修改 .ipynb 里某一个单元格中唯一的一段文本。cell_index 从 0 开始。",
+      parameters: {
+        type: "object",
+        properties: {
+          path: { type: "string" },
+          cell_index: { type: "string" },
+          old_string: { type: "string" },
+          new_string: { type: "string" },
+        },
+        required: ["path", "cell_index", "old_string", "new_string"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
       name: "explore_codebase",
       description: "启动只读子 Agent 探索代码库（搜索+读文件，不改磁盘）",
       parameters: {
@@ -229,6 +247,19 @@ export async function runTool(name: string, args: Record<string, string>, ctx: T
   }
   if (name === "switch_mode") {
     return switchMode(args.mode || "");
+  }
+  if (name === "edit_notebook") {
+    if (!args.path?.endsWith(".ipynb")) return "只能编辑 .ipynb";
+    const abs = inside(args.path);
+    const rel = relative(workspace, abs);
+    const idx = Number(args.cell_index);
+    if (!Number.isInteger(idx) || idx < 0) return "cell_index 无效";
+    try {
+      const next = replaceNotebookCell(readFileSync(abs, "utf8"), idx, args.old_string ?? "", args.new_string ?? "");
+      return writeContent(rel, next, ctx);
+    } catch (e) {
+      return e instanceof Error ? e.message : String(e);
+    }
   }
   if (name === "explore_codebase") {
     const { runExplore } = await import("./explore-agent.ts");

@@ -85,7 +85,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 | Grep | `grep` | 完成，已测 |
 | Shell | `shell` | 完成，已测 |
 | ReadLints | `read_lints`（typecheck） | 完成，已测 |
-| EditNotebook | — | 未做 |
+| EditNotebook | `edit_notebook` 改 `.ipynb` 单元格 | 完成，已测 |
 | WebSearch / WebFetch | MCP `@modelcontextprotocol/server-fetch`（可选） | MCP 完成，fetch 未测 |
 | MCP 动态工具 | `mcp_{server}__{tool}` | 完成，未测（默认 fetch 关闭） |
 | Task 子 Agent | `explore_codebase` 只读子 Agent | 完成，已测（`test:explore-loop` mock LLM） |
@@ -236,7 +236,7 @@ fork 自带 Chat/Apply/Checkpoint/MCP，若 **算「可用的类 Cursor 桌面�
 | Web chat mock | `npm run test:web-chat-mock` | 无 Key |
 | CI | `.github/workflows/test.yml` | `build:agent-cli` + `npm test` |
 | Web 审核写 | `npm run test:web-patch-review` | mock `review` |
-| 一键 | `npm test` | `typecheck` + **34 套**（`rg`/bash **可选**，缺则 skip 对应子测） |
+| 一键 | `npm test` | `typecheck` + **35 套**（`rg`/bash **可选**，缺则 skip 对应子测） |
 | 手测 / 风险清单 | **`QA-NOTES.md`** | Agent 不好测项 |
 | Web `/api/*`、扩展 UI | **无** | 曾手动 curl/Agent 测，无 CI |
 | `explore_codebase` **契约** | `npm run test:explore-contract` | 只读工具白名单，无 LLM |
