@@ -9,6 +9,7 @@ import { stageQuestion, switchMode, type AskOption } from "./session.ts";
 import { replaceNotebookCell } from "./notebook.ts";
 import { awaitShellJob, startShellJob } from "./shellJobs.ts";
 import { fetchUrlText, webSearch } from "./webFetch.ts";
+import { listSymbols } from "./symbols.ts";
 import { workspace } from "./workspace.ts";
 
 export { workspace };
@@ -235,6 +236,14 @@ export const builtinToolDefs = [
   {
     type: "function" as const,
     function: {
+      name: "list_symbols",
+      description: "列出源码文件里的 function、class、type、interface、const。按行扫描，不是完整语法树。",
+      parameters: { type: "object", properties: { path: { type: "string" } }, required: ["path"] },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
       name: "explore_codebase",
       description: "启动只读子 Agent 探索代码库（搜索+读文件，不改磁盘）",
       parameters: {
@@ -298,6 +307,12 @@ export async function runTool(name: string, args: Record<string, string>, ctx: T
     } catch (e) {
       return e instanceof Error ? e.message : String(e);
     }
+  }
+  if (name === "list_symbols") {
+    const text = readFileSync(inside(args.path), "utf8");
+    const hits = listSymbols(text);
+    if (!hits.length) return "(无符号)";
+    return hits.map((h) => `${h.line} ${h.kind} ${h.name}`).join("\n");
   }
   if (name === "web_fetch") {
     return fetchUrlText(args.url || "");

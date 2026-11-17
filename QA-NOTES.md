@@ -35,6 +35,7 @@
 | `test:skills-rules` | skills + AGENTS.md + `.cursor/rules` |
 | `test:context-budget` | 单次 run 内丢掉过长的旧消息 |
 | `test:complete` | 文件内标识符补全 |
+| `test:symbols` | function/class/type/const 行扫描 |
 | `test:todos` | `todo_write` 替换与 merge |
 | `test:session` | `ask_question`、`switch_mode`、记录选择 |
 | `test:web-session` | `GET /api/session` 与回答 |
