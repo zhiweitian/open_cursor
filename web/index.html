@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenCursor</title>
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body>
+  <header>
+    <b>OpenCursor</b>
+    <nav><a href="/">聊天</a><a href="/editor?path=plan.md">编辑器</a><a href="/config">模型配置</a></nav>
+    <span class="meta" id="badge"></span>
+  </header>
+  <div class="layout">
+    <aside id="tree"></aside>
+    <main>
+      <div id="thread"></div>
+      <div id="patches"></div>
+      <div class="opts">
+        <label><input id="review" type="checkbox" checked /> 写入需审核（diff）</label>
+        <label><input id="danger" type="checkbox" /> 允许危险 shell</label>
+        <label><input id="useMcp" type="checkbox" checked /> 连接 MCP</label>
+        <button class="ghost" id="restore" disabled>回滚本轮</button>
+      </div>
+      <div id="composer">
+        <textarea id="q" placeholder="提问… 可用 @src/agent.ts 附带文件上下文"></textarea>
+        <button id="go">发送</button>
+      </div>
+      <p id="log"></p>
+    </main>
+  </div>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const thread = $("thread");
+    const patchesEl = $("patches");
+    let runId = null;
+
+    fetch("/api/config").then((r) => r.json()).then((c) => {
+      $("badge").textContent = c.hasKey ? `${c.model}` : "先去配置模型";
+    });
+
+    function renderTree(nodes, depth = 0) {
+      const ul = document.createElement("ul");
+      for (const n of nodes) {
+        const li = document.createElement("li");
+        li.style.paddingLeft = depth * 10 + "px";
+        li.textContent = (n.type === "dir" ? "📁 " : "📄 ") + n.name;
+        li.onclick = (ev) => {
+          if (n.type !== "file") return;
+          if (ev.metaKey || ev.ctrlKey) {
+            location.href = `/editor?path=${encodeURIComponent(n.path)}`;
+            return;
+          }
+          const q = $("q");
+          q.value = (q.value.trim() ? q.value.trim() + " " : "") + `@${n.path} `;
+          q.focus();
+        };
+        ul.appendChild(li);
+        if (n.children?.length) ul.appendChild(renderTree(n.children, depth + 1));
+      }
+      return ul;
+    }
+    fetch("/api/tree").then((r) => r.json()).then(({ tree }) => {
+      $("tree").appendChild(renderTree(tree));
+    });
+
+    function add(who, text, steps) {
+      const el = document.createElement("div");
+      el.className = "msg " + who;
+      el.innerHTML = `<div class="who">${who}</div>`;
+      if (steps) steps.forEach((s) => {
+        const p = document.createElement("pre");
+        p.className = "step";
+        p.textContent = `${s.tool} ${JSON.stringify(s.args)}\n${s.out.slice(0, 800)}`;
+        el.appendChild(p);
+      });
+      const t = document.createElement("div");
+      t.textContent = text;
+      el.appendChild(t);
+      thread.appendChild(el);
+      thread.scrollTop = thread.scrollHeight;
+    }
+
+    function renderPatches(patches) {
+      patchesEl.innerHTML = "";
+      if (!patches?.length) return;
+      const h = document.createElement("h3");
+      h.textContent = "待接受补丁";
+      patchesEl.appendChild(h);
+      for (const p of patches) {
+        const box = document.createElement("div");
+        box.className = "patch";
+        const pre = document.createElement("pre");
+        pre.className = "diff";
+        pre.textContent = p.diff;
+        box.innerHTML = `<div class="patch-head">${p.path}</div>`;
+        box.appendChild(pre);
+        const row = document.createElement("div");
+        row.className = "row";
+        const ok = document.createElement("button");
+        ok.textContent = "接受";
+        ok.onclick = async () => {
+          await fetch(`/api/runs/${runId}/patches/${p.id}/accept`, { method: "POST" });
+          box.remove();
+        };
+        const no = document.createElement("button");
+        no.className = "ghost";
+        no.textContent = "拒绝";
+        no.onclick = async () => {
+          await fetch(`/api/runs/${runId}/patches/${p.id}/reject`, { method: "POST" });
+          box.remove();
+        };
+        row.append(ok, no);
+        box.appendChild(row);
+        patchesEl.appendChild(box);
+      }
+    }
+
+    async function send() {
+      const message = $("q").value.trim();
+      if (!message) return;
+      $("q").value = "";
+      add("user", message);
+      $("log").textContent = "跑工具中…";
+      const r = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          message,
+          reviewWrites: $("review").checked,
+          allowDangerousShell: $("danger").checked,
+          useMcp: $("useMcp").checked,
+        }),
+      });
+      const j = await r.json();
+      if (j.error) {
+        $("log").className = "bad";
+        $("log").textContent = j.error;
+        return;
+      }
+      runId = j.runId;
+      $("restore").disabled = !runId;
+      add("assistant", j.text, j.steps);
+      renderPatches(j.patches);
+      $("log").textContent = "";
+    }
+
+    $("go").onclick = send;
+    $("q").onkeydown = (e) => {
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) send();
+    };
+    $("restore").onclick = async () => {
+      if (!runId || !confirm("回滚本轮已改动的文件？")) return;
+      const r = await fetch(`/api/runs/${runId}/restore`, { method: "POST" });
+      const j = await r.json();
+      $("log").className = "ok";
+      $("log").textContent = `已回滚 ${j.restored} 个路径`;
+      patchesEl.innerHTML = "";
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>模型配置</title>
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body>
+  <header>
+    <b>mini-cursor</b>
+    <nav><a href="/">聊天</a><a href="/editor?path=plan.md">编辑器</a><a href="/config">模型配置</a></nav>
+    <span class="meta" id="badge"></span>
+  </header>
+  <main>
+    <h1>模型配置</h1>
+    <label>供应商</label>
+    <select id="provider">
+      <option value="deepseek">DeepSeek 官方</option>
+      <option value="openai">OpenAI</option>
+      <option value="custom">自定义</option>
+    </select>
+    <label>Base URL</label>
+    <input id="baseUrl" />
+    <label>模型</label>
+    <input id="model" list="models" />
+    <datalist id="models"></datalist>
+    <label>API Key</label>
+    <input id="apiKey" type="password" placeholder="留空则保持原 Key" />
+    <label><input id="thinking" type="checkbox" style="width:auto" /> 开启 thinking（更慢）</label>
+    <div class="row">
+      <button id="save">保存</button>
+      <button class="ghost" id="test">测试连接</button>
+      <button class="ghost" id="pull">拉取模型列表</button>
+    </div>
+    <p id="log"></p>
+    <h2>MCP 工具（开源 @modelcontextprotocol/sdk）</h2>
+    <p style="color:var(--mute);font-size:12px">JSON 配置 stdio MCP 服务；enabled 为 true 时 Agent 会自动挂载工具。</p>
+    <textarea id="mcpJson" rows="10" style="font-family:monospace;font-size:12px"></textarea>
+    <div class="row">
+      <button class="ghost" id="saveMcp">保存 MCP</button>
+      <button class="ghost" id="probeMcp">探测 MCP 工具</button>
+    </div>
+    <p id="mcpLog"></p>
+    <h2>Agent Hooks</h2>
+    <p style="color:var(--mute);font-size:12px">在工具前后、Agent 结束时执行 shell。Env：<code>OPENCURSOR_HOOK_TOOL</code>、<code>OPENCURSOR_HOOK_ARGS</code> 等。落盘 <code>data/hooks.json</code>。</p>
+    <textarea id="hooksJson" rows="8" style="font-family:monospace;font-size:12px"></textarea>
+    <div class="row">
+      <button class="ghost" id="saveHooks">保存 Hooks</button>
+    </div>
+    <p id="hooksLog"></p>
+  </main>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const log = (t, ok) => { $("log").textContent = t; $("log").className = ok === true ? "ok" : ok === false ? "bad" : ""; };
+    let cfg;
+    function fill(c) {
+      cfg = c;
+      $("provider").value = c.provider;
+      $("baseUrl").value = c.baseUrl;
+      $("model").value = c.model;
+      $("thinking").checked = c.thinking;
+      $("badge").textContent = c.hasKey ? `${c.model} · ${c.apiKeyMasked}` : "未配置 Key";
+      $("models").innerHTML = (c.presets[c.provider]?.models || []).map((m) => `<option value="${m}">`).join("");
+    }
+    $("provider").onchange = () => {
+      const p = $("provider").value;
+      const pre = cfg.presets[p];
+      if (pre) {
+        $("baseUrl").value = pre.baseUrl;
+        $("model").value = pre.models[0];
+        $("models").innerHTML = pre.models.map((m) => `<option value="${m}">`).join("");
+      }
+    };
+    async function load() {
+      fill(await (await fetch("/api/config")).json());
+    }
+    $("save").onclick = async () => {
+      const body = {
+        provider: $("provider").value,
+        baseUrl: $("baseUrl").value.trim(),
+        model: $("model").value.trim(),
+        thinking: $("thinking").checked,
+      };
+      const key = $("apiKey").value.trim();
+      if (key) body.apiKey = key;
+      fill(await (await fetch("/api/config", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) })).json());
+      $("apiKey").value = "";
+      log("已保存", true);
+    };
+    $("test").onclick = async () => {
+      log("测试中…");
+      const r = await fetch("/api/test", { method: "POST" });
+      const j = await r.json();
+      log(j.ok ? `连通：${j.text}` : j.error || "失败", Boolean(j.ok));
+    };
+    $("pull").onclick = async () => {
+      const r = await fetch("/api/models");
+      const j = await r.json();
+      const ids = (j.data || []).map((m) => m.id);
+      if (!ids.length) return log(j.error || "没有模型", false);
+      $("models").innerHTML = ids.map((m) => `<option value="${m}">`).join("");
+      log(ids.join("、"), true);
+    };
+    async function loadMcp() {
+      $("mcpJson").value = JSON.stringify(await (await fetch("/api/mcp")).json(), null, 2);
+    }
+    $("saveMcp").onclick = async () => {
+      const body = JSON.parse($("mcpJson").value);
+      $("mcpJson").value = JSON.stringify(await (await fetch("/api/mcp", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) })).json(), null, 2);
+      $("mcpLog").textContent = "MCP 已保存";
+    };
+    $("probeMcp").onclick = async () => {
+      $("mcpLog").textContent = "探测中…";
+      const j = await (await fetch("/api/mcp/probe", { method: "POST" })).json();
+      $("mcpLog").textContent = j.ok ? j.tools.map((t) => t.id).join(", ") || "(无工具)" : j.error;
+    };
+    async function loadHooks() {
+      $("hooksJson").value = JSON.stringify(await (await fetch("/api/hooks")).json(), null, 2);
+    }
+    $("saveHooks").onclick = async () => {
+      const body = JSON.parse($("hooksJson").value);
+      $("hooksJson").value = JSON.stringify(
+        await (await fetch("/api/hooks", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) })).json(),
+        null,
+        2,
+      );
+      $("hooksLog").textContent = "Hooks 已保存";
+    };
+    load();
+    loadMcp();
+    loadHooks();
+  </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+{
+  "name": "opencursor",
+  "displayName": "OpenCursor",
+  "description": "开源版 Cursor：在 VS Code 里用可自配 API 的 Agent",
+  "version": "0.1.0",
+  "publisher": "opencursor",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["AI", "Other"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "opencursor",
+          "title": "OpenCursor",
+          "icon": "media/spark.svg"
+        }
+      ]
+    },
+    "views": {
+      "opencursor": [
+        {
+          "type": "webview",
+          "id": "opencursor.chat",
+          "name": "Agent"
+        }
+      ]
+    },
+    "commands": [
+      { "command": "opencursor.openChat", "title": "OpenCursor: 打开 Agent 面板" },
+      { "command": "opencursor.newChat", "title": "OpenCursor: 新对话" }
+    ],
+    "configuration": {
+      "title": "OpenCursor",
+      "properties": {
+        "openCursor.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "模型 API Key（OpenAI 兼容）"
+        },
+        "openCursor.baseUrl": {
+          "type": "string",
+          "default": "https://api.deepseek.com",
+          "description": "API Base URL"
+        },
+        "openCursor.model": {
+          "type": "string",
+          "default": "deepseek-flash",
+          "description": "模型名"
+        },
+        "openCursor.thinking": {
+          "type": "boolean",
+          "default": false
+        },
+        "openCursor.reviewWrites": {
+          "type": "boolean",
+          "default": true,
+          "description": "写入前 diff 审核"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.25.12",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@opencursor/agent-core": "0.1.0"
+  }
+}

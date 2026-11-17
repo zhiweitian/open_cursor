@@ -1,0 +1,16 @@
+{
+  "name": "@opencursor/agent-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./runs": "./src/runs.ts",
+    "./workspace": "./src/workspace.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "fast-glob": "^3.3.3",
+    "ignore": "^7.0.14"
+  }
+}

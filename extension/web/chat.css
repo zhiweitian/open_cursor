@@ -1,0 +1,89 @@
+:root {
+  --bg: #1e1e1e;
+  --panel: #252526;
+  --border: #3c3c3c;
+  --text: #cccccc;
+  --mute: #858585;
+  --acc: #3794ff;
+  --user: #2d2d30;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.top {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.brand { font-weight: 600; font-size: 12px; }
+.hint { color: var(--mute); font-size: 11px; }
+#thread {
+  flex: 1;
+  overflow: auto;
+  padding: 10px 12px;
+}
+.msg {
+  margin: 8px 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  white-space: pre-wrap;
+}
+.msg.user { background: var(--user); }
+.msg .who { font-size: 10px; color: var(--mute); margin-bottom: 4px; }
+.step {
+  font-size: 11px;
+  color: var(--mute);
+  background: #1a1a1a;
+  padding: 6px 8px;
+  border-radius: 4px;
+  margin: 4px 0;
+  overflow: auto;
+  max-height: 120px;
+}
+.patch {
+  border: 1px solid var(--border);
+  margin: 8px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+.patch pre { margin: 0; padding: 8px; max-height: 100px; overflow: auto; }
+.composer {
+  border-top: 1px solid var(--border);
+  padding: 8px 12px 12px;
+  background: var(--panel);
+}
+.composer textarea {
+  width: 100%;
+  margin-top: 6px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  resize: vertical;
+}
+.composer button {
+  margin-top: 6px;
+  width: 100%;
+  background: var(--acc);
+  color: #fff;
+  border: 0;
+  border-radius: 6px;
+  padding: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.opt { font-size: 11px; color: var(--mute); margin-right: 10px; }
+#log { font-size: 11px; color: var(--bad, #f48771); padding: 0 12px 8px; min-height: 16px; }
+#patches { max-height: 180px; overflow: auto; }

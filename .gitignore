@@ -1,0 +1,18 @@
+node_modules/
+.env
+data/
+dist/
+*.log
+.DS_Store
+
+# 本地安装包产物，勿提交
+desktop/VSCode-darwin-arm64/
+
+# CortexIDE fork 为独立 git 仓库（在本目录内 commit；clone 本仓库后见 desktop/README.md）
+desktop/cortexide/
+
+# VS Code fork 构建产物
+desktop/cortexide/node_modules/
+desktop/cortexide/.build/
+desktop/cortexide/out/
+desktop/cortexide/.vscode-test/
