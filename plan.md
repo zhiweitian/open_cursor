@@ -163,7 +163,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
    - 当前打开文件 — 完成，已测（编辑器打开后聊天页显示，并进入系统提示）
    - 简易 codebase_search — 完成，已测
    - ripgrep 索引封装 — 完成，已测（`refresh_file_index` + `grep_index`；无 rg 时目录遍历）
-   - 符号 / embeddings — 符号 `list_symbols` 行扫描完成，已测；embeddings 未做
+   - 符号 / embeddings — 符号行扫描完成；本地词袋向量 `refresh_embeddings` / `embedding_search` 完成，已测。外部嵌入模型 API 未做
    - 忽略规则 — 完成，已测
 
 5. **编辑器壳（Fork）**
@@ -195,9 +195,9 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 
 | 口径 | 约 % | 说明 |
 |------|------|------|
-| **plan 里「自研 agent-core MVP」** | **~95%** | 当前打开文件进入会话、`npm test`（**47 套**）；仍缺 embeddings、小模型补全、外网 MCP |
+| **plan 里「自研 agent-core MVP」** | **~96%** | 本地词袋向量检索、`npm test`（**48 套**）；仍缺小模型 Tab、外网 MCP、外部嵌入模型 API |
 | **「一个安装包 = OpenCursor」** | **~58%** | fork Chat agent-core + 补丁/流式/Stop + accept→Checkpoint；与原生 Cursor 壳仍两套 |
-| **相对商业 Cursor 全功能** | **~18%** | 缺 Cloud Agent、Tab 产品化、账号网关、Canvas/语音、云端 Automations、embeddings |
+| **相对商业 Cursor 全功能** | **~18%** | 缺 Cloud Agent、Tab 产品化、账号网关、Canvas/语音、云端 Automations、外部嵌入模型 |
 
 fork 自带 Chat/Apply/Checkpoint/MCP，若 **算「可用的类 Cursor 桌面」** 约 **~57%**（**CortexIDE 原生为主**，OpenCursor agent-core 为可选第二引擎）。
 
@@ -241,7 +241,7 @@ fork 自带 Chat/Apply/Checkpoint/MCP，若 **算「可用的类 Cursor 桌面�
 | Web chat mock | `npm run test:web-chat-mock` | 无 Key |
 | CI | `.github/workflows/test.yml` | `build:agent-cli` + `npm test` |
 | Web 审核写 | `npm run test:web-patch-review` | mock `review` |
-| 一键 | `npm test` | `typecheck` + **47 套**（`rg`/bash **可选**，缺则 skip 对应子测） |
+| 一键 | `npm test` | `typecheck` + **48 套**（`rg`/bash **可选**，缺则 skip 对应子测） |
 | 手测 / 风险清单 | **`QA-NOTES.md`** | Agent 不好测项 |
 | Web `/api/*`、扩展 UI | **无** | 曾手动 curl/Agent 测，无 CI |
 | `explore_codebase` **契约** | `npm run test:explore-contract` | 只读工具白名单，无 LLM |

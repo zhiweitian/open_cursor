@@ -12,6 +12,7 @@ import { fetchUrlText, webSearch } from "./webFetch.ts";
 import { listSymbols } from "./symbols.ts";
 import { replaceLineRange } from "./editRange.ts";
 import { grepFileIndex, refreshFileIndex } from "./fileIndex.ts";
+import { refreshEmbeddings, searchEmbeddings } from "./embeddings.ts";
 import { setGoal, updateGoal } from "./goals.ts";
 import { saveAutomations, type Automation } from "./automations.ts";
 import { workspace } from "./workspace.ts";
@@ -159,6 +160,22 @@ export const builtinToolDefs = [
         properties: { query: { type: "string" } },
         required: ["query"],
       },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "refresh_embeddings",
+      description: "用本地词袋向量重建代码索引，写入 data/embeddings.json。不是外部嵌入模型。",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "embedding_search",
+      description: "在本地词袋向量索引里按相似度找代码片段。需先调用 refresh_embeddings。",
+      parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] },
     },
   },
   {
@@ -477,6 +494,11 @@ export async function runTool(name: string, args: Record<string, string>, ctx: T
     return `已索引 ${index.files.length} 个文件（${index.via}）`;
   }
   if (name === "grep_index") return grepFileIndex(args.pattern || "");
+  if (name === "refresh_embeddings") {
+    const built = refreshEmbeddings();
+    return `已建立 ${built.chunks} 个代码片段向量`;
+  }
+  if (name === "embedding_search") return searchEmbeddings(args.query || "");
   if (name === "grep") {
     const r = spawnSync(
       "rg",
