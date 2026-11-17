@@ -28,6 +28,7 @@ import {
   stageWrite,
   workspace,
   applyCliMockLlm,
+  completeAt,
 } from "@opencursor/agent-core";
 
 applyCliMockLlm();
@@ -125,6 +126,12 @@ const server = createServer(async (req, res) => {
       }
       applyWriteImmediate(run.id, pathRel, content);
       return send(res, 200, { ok: true, runId: run.id });
+    }
+    if (req.method === "POST" && url.pathname === "/api/complete") {
+      const body = await readBody(req);
+      const text = String(body.text ?? "");
+      const cursor = Number(body.cursor ?? text.length);
+      return send(res, 200, { completion: completeAt(text, Number.isFinite(cursor) ? cursor : text.length) });
     }
     if (req.method === "POST" && url.pathname === "/api/chat") {
       const body = await readBody(req);

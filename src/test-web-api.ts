@@ -97,6 +97,14 @@ try {
     });
     const hooksBody = (await hooksPost.json()) as { hooks?: { event: string }[] };
     assert("POST /api/hooks", hooksPost.status === 200 && hooksBody.hooks?.[0]?.event === "agentStop");
+
+    const complete = await fetch(`http://127.0.0.1:${port}/api/complete`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text: "function helloWorld() {}\nhello" }),
+    });
+    const cj = (await complete.json()) as { completion?: string };
+    assert("POST /api/complete", complete.status === 200 && cj.completion === "World");
   }
 } finally {
   child?.kill("SIGTERM");

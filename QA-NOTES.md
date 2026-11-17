@@ -34,6 +34,7 @@
 | `test:explore-loop` | `explore_codebase` 多轮 + mock LLM |
 | `test:skills-rules` | skills + AGENTS.md + `.cursor/rules` |
 | `test:context-budget` | 单次 run 内丢掉过长的旧消息 |
+| `test:complete` | 文件内标识符补全 |
 | `test:todos` | `todo_write` 替换与 merge |
 | `test:session` | `ask_question` 与 `switch_mode` |
 | `test:notebook` | `edit_notebook` 改单个单元格 |

@@ -43,6 +43,23 @@
           theme: "vs-dark",
           automaticLayout: true,
           fontSize: 13,
+          inlineSuggest: { enabled: true },
+        });
+        monaco.languages.registerInlineCompletionsProvider(lang, {
+          provideInlineCompletions: async (model, position) => {
+            const text = model.getValue();
+            const cursor = model.getOffsetAt(position);
+            const r = await fetch("/api/complete", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ text, cursor }),
+            });
+            const out = await r.json();
+            if (!out.completion) return { items: [] };
+            const range = new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column);
+            return { items: [{ insertText: out.completion, range }] };
+          },
+          freeInlineCompletions() {},
         });
       });
     };
