@@ -38,6 +38,7 @@
 | `test:notebook` | `edit_notebook` 改单个单元格 |
 | `test:shell-jobs` | 后台 shell 启动、等待、拦截危险命令 |
 | `test:web-fetch` | 本地 HTTP `web_fetch`，拒绝 file URL |
+| `test:web-search` | 未配置提示 + 本地 `OPENCURSOR_SEARCH_URL` |
 | `test:web-file-review` | POST `/api/file` 审核写、越界路径 |
 | `test:hooks-save` | `saveHooks` 落盘 |
 | `test:web-restore` | 写文件 + restore |

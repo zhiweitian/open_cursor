@@ -22,3 +22,20 @@ export async function fetchUrlText(url: string, timeoutMs = 8000): Promise<strin
     clearTimeout(timer);
   }
 }
+
+/** Search via OPENCURSOR_SEARCH_URL. The endpoint receives ?q=. */
+export async function webSearch(query: string): Promise<string> {
+  const q = query.trim();
+  if (!q) return "query 不能为空";
+  const base = process.env.OPENCURSOR_SEARCH_URL?.trim();
+  if (!base) return "未配置搜索。设置 OPENCURSOR_SEARCH_URL 为接受 ?q= 的 http(s) 地址。";
+  let url: URL;
+  try {
+    url = new URL(base);
+  } catch {
+    return "OPENCURSOR_SEARCH_URL 无效";
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") return "搜索地址只允许 http/https";
+  url.searchParams.set("q", q);
+  return fetchUrlText(url.toString());
+}

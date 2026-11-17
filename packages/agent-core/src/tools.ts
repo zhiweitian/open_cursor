@@ -8,7 +8,7 @@ import { saveTodos, type TodoItem } from "./todos.ts";
 import { stageQuestion, switchMode, type AskOption } from "./session.ts";
 import { replaceNotebookCell } from "./notebook.ts";
 import { awaitShellJob, startShellJob } from "./shellJobs.ts";
-import { fetchUrlText } from "./webFetch.ts";
+import { fetchUrlText, webSearch } from "./webFetch.ts";
 import { workspace } from "./workspace.ts";
 
 export { workspace };
@@ -220,8 +220,16 @@ export const builtinToolDefs = [
     type: "function" as const,
     function: {
       name: "web_fetch",
-      description: "抓取 http(s) 页面正文，最多 5 万字符。不支持网页搜索。",
+      description: "抓取 http(s) 页面正文，最多 5 万字符。",
       parameters: { type: "object", properties: { url: { type: "string" } }, required: ["url"] },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "web_search",
+      description: "网页搜索。需要环境变量 OPENCURSOR_SEARCH_URL（会附上 ?q=）。",
+      parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] },
     },
   },
   {
@@ -293,6 +301,9 @@ export async function runTool(name: string, args: Record<string, string>, ctx: T
   }
   if (name === "web_fetch") {
     return fetchUrlText(args.url || "");
+  }
+  if (name === "web_search") {
+    return webSearch(args.query || "");
   }
   if (name === "explore_codebase") {
     const { runExplore } = await import("./explore-agent.ts");

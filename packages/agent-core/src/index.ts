@@ -21,7 +21,7 @@ export { trimChatMessages } from "./contextBudget.ts";
 export { loadTodos, saveTodos, type TodoItem, type TodoStatus } from "./todos.ts";
 export { stageQuestion, switchMode, type AskOption, type StagedQuestion } from "./session.ts";
 export { replaceNotebookCell } from "./notebook.ts";
-export { fetchUrlText } from "./webFetch.ts";
+export { fetchUrlText, webSearch } from "./webFetch.ts";
 export { syncDeepSeekConfigFromEnv } from "./syncConfigFromCortexide.ts";
 export { EXPLORE_READ_ONLY_TOOLS } from "./explore-agent.ts";
 export {
