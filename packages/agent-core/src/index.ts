@@ -17,6 +17,7 @@ export { listSkills } from "./skills.ts";
 export { inside, runTool, builtinToolDefs, isDangerousShell } from "./tools.ts";
 export { buildTree } from "./tree.ts";
 export { expandAtMentions } from "./context.ts";
+export { trimChatMessages } from "./contextBudget.ts";
 export { syncDeepSeekConfigFromEnv } from "./syncConfigFromCortexide.ts";
 export { EXPLORE_READ_ONLY_TOOLS } from "./explore-agent.ts";
 export {

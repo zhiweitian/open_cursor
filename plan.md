@@ -236,7 +236,7 @@ fork 自带 Chat/Apply/Checkpoint/MCP，若 **算「可用的类 Cursor 桌面�
 | Web chat mock | `npm run test:web-chat-mock` | 无 Key |
 | CI | `.github/workflows/test.yml` | `build:agent-cli` + `npm test` |
 | Web 审核写 | `npm run test:web-patch-review` | mock `review` |
-| 一键 | `npm test` | `typecheck` + **31 套**（`rg`/bash **可选**，缺则 skip 对应子测） |
+| 一键 | `npm test` | `typecheck` + **32 套**（`rg`/bash **可选**，缺则 skip 对应子测） |
 | 手测 / 风险清单 | **`QA-NOTES.md`** | Agent 不好测项 |
 | Web `/api/*`、扩展 UI | **无** | 曾手动 curl/Agent 测，无 CI |
 | `explore_codebase` **契约** | `npm run test:explore-contract` | 只读工具白名单，无 LLM |

@@ -6,7 +6,11 @@ import { expandAtMentions } from "./context.ts";
 import { rulesSystemBlock } from "./rules.ts";
 import { skillsSystemBlock } from "./skills.ts";
 import { fireHooks } from "./hooks.ts";
+import { trimChatMessages } from "./contextBudget.ts";
 import { builtinToolDefs, runTool, workspace, type ToolCtx } from "./tools.ts";
+
+const TOOL_MSG_MAX = 12_000;
+const RUN_CONTEXT_MAX = 80_000;
 
 export type Msg = ChatMsg;
 export type Step = {
@@ -61,9 +65,10 @@ export async function runAgent(userText: string, opts: AgentOptions = {}) {
       if (opts.signal?.aborted) {
         return abortedResult(steps, opts, hub.summary());
       }
+      const prompt = trimChatMessages(messages, RUN_CONTEXT_MAX);
       let msg: ChatMsg;
       try {
-        msg = await chatCompletion(messages, tools, {
+        msg = await chatCompletion(prompt, tools, {
           onDelta: opts.onLlmDelta
             ? (delta, full) => {
                 void opts.onLlmDelta!(delta, full);
@@ -123,7 +128,7 @@ export async function runAgent(userText: string, opts: AgentOptions = {}) {
           role: "tool",
           tool_call_id: call.id,
           name: call.function.name,
-          content: out,
+          content: out.slice(0, TOOL_MSG_MAX),
         });
       }
     }
