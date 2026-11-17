@@ -34,6 +34,7 @@
 | `test:hooks-save` | `saveHooks` 落盘 |
 | `test:web-restore` | 写文件 + restore |
 | `test:web-chat-mock` | mock chat + GET run + POST `/api/test` |
+| `test:web-patch-review` | `OPENCURSOR_MOCK_LLM=review` 审核写 + accept/reject |
 | `npm test` 首步 | `typecheck` |
 
 ## Agent 不好测 / 需你本机验证
@@ -52,8 +53,9 @@
 
 | 值 | 行为 |
 |----|------|
-| `fast` | 直接回复 `mock-ok` |
+| `fast` | 直接回复 `mock-ok`（`pingModel` 仍返回 `ok`） |
 | `tool` | `list_dir` + `mock-tool-done`，stderr 含 `run`/`tool_start`/`step`/`llm` |
+| `review` | `write_file` 待审核补丁 + Web accept/reject 测 |
 | `slow` 或 `slow:8000` | 长延迟（abort 测试） |
 
 示例：`OPENCURSOR_MOCK_LLM=tool node dist/opencursor-agent.cjs '{"workspace":"/tmp/ws","message":"x","useMcp":false}'`

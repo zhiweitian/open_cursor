@@ -4,53 +4,77 @@ CortexIDE AI 代码主要在：
 
 `desktop/cortexide/src/vs/workbench/contrib/cortexide/`
 
-## 接入策略（推荐分三步）
+## 已实现（OpenCursor 桥）
 
-### 1. 配置对齐（快）
+| 能力 | 位置 |
+|------|------|
+| Chat 走 agent-core | `useOpenCursorAgentCore` + `chatThreadService._runOpenCursorAgentCoreBridge` |
+| 子进程 CLI | `electron-main/opencursorAgentChannel.ts` → `dist/opencursor-agent.cjs` |
+| 流式 / tool_start | stderr JSON → IPC `onStep` |
+| 补丁审核 UI | `OpenCursorToolBubble.tsx` + `opencursorPatchActions.ts` |
+| 可选 MCP | Settings **OpenCursor MCP tools** → `useMcp` |
+| 就绪状态栏 | `opencursorStatusBar.ts` |
 
-- 在 CortexIDE 设置 UI 中已有 Provider / Model。
-- 增加默认值：`https://api.deepseek.com` + `deepseek-flash`（与 OpenCursor `.env` 一致）。
-- 文档：用户可在设置里自配 OpenAI 兼容 Base URL（已是 Cortex 目标）。
+Fork 本地提交参考：见 `desktop/README.md`（独立 git 仓库）。
 
-### 2. 工具层复用（中）
-
-- 将 `packages/agent-core` 打包为 **Node 可执行 bundle**（esbuild），在 fork 里通过 **Utility Process / child_process** 调用：
-  - 根目录：`npm run build:agent-cli` → `dist/opencursor-agent.cjs` + `dist/opencursor-patches.mjs`
-  - 调用示例：
+## 构建与手测
 
 ```bash
-node dist/opencursor-agent.cjs '{"workspace":"/path/to/repo","message":"列出根目录文件","reviewWrites":true}'
+# monorepo 根
+npm install
+npm run build:agent-cli    # dist/opencursor-agent.cjs + opencursor-patches.mjs
+npm test                   # 含 CLI mock / Web API（见 QA-NOTES.md）
 
-命令面板（fork 内）：
-
-- `OpenCursor: Review pending patches` — 预览 diff / accept / reject（Quick Pick 带 diff 摘要）
-- `OpenCursor: Preview pending patch (diff editor)` — 直接打开 VS Code 并排 diff
-- `OpenCursor: Accept all pending patches` — 批量 accept（并同步 Chat 气泡状态）
+# fork
+cd desktop/cortexide
+npm run buildreact && npm run compile   # 改过 React/TS 后
+./scripts/code.sh
 ```
 
-  -  stdout：`{ text, steps, runId }`（配置读工作区 `data/config.json` 与 `.env`）
-  - 桌面 fork：**设置** → 打开 **OpenCursor agent-core (Chat)**，或命令面板 `OpenCursor: Run agent-core (Experimental)`
-  - 需 `npm run build:agent-cli`；工作区含 `data/config.json` 或已在 Cortex 设置里配好 DeepSeek Key（会同步到 config）
-  - **补丁审核**：工具行上的 ✓/✗，或命令面板 `OpenCursor: Review pending patches`（读写 `data/runs/*.json`）
-- 或在 contrib 里 **TypeScript 直接 import** agent-core（需适配 ESM/CJS 与 VS Code 构建链，工作量大）。
+手测清单：仓库根 [`手测清单.md`](../手测清单.md)。
 
-### 3. UI 统一（慢）
+## CLI 调用示例
 
-- 保留 CortexIDE 原生 Chat / Apply / Checkpoint UI。
-- 逐步替换 LLM 循环实现为 `runAgent()`，MCP 读 `data/mcp.json`（工作区根目录）。
+```bash
+node dist/opencursor-agent.cjs '{"workspace":"/path/to/repo","message":"列出根目录","reviewWrites":true,"useMcp":false}'
+```
 
-## OpenCursor 独有、待移植
+无 API Key（与 CI 一致）：
+
+```bash
+export OPENCURSOR_MOCK_LLM=tool   # 或 fast / review / slow:3000
+```
+
+- **stdout**：`{ text, steps, runId, patches? }`
+- **stderr**：`{event:"run"|"llm"|"tool_start"|"step", ...}`
+
+补丁 CLI：
+
+```bash
+node dist/opencursor-patches.mjs '{"workspace":"...","op":"list"}'
+```
+
+## 命令面板（fork 内）
+
+- `OpenCursor: Run agent-core (Experimental)`
+- `OpenCursor: Review pending patches`
+- `OpenCursor: Accept all pending patches`
+- `OpenCursor: Preview pending patch (diff editor)`
+
+配置：工作区 `data/config.json`、`.env`，或 Cortex DeepSeek 设置（启动时同步 Key）。
+
+## 仍缺 / 后续
 
 | agent-core | Cortex 侧 |
 |------------|-----------|
-| `explore_codebase` | 对接 Gather/Agent 模式 |
-| MCP `McpHub` | Cortex 已有 MCP，可合并配置 |
-| Rules / Skills | 注入 system prompt |
-| diff 审核 run | 对接 Checkpoint 服务 |
+| `explore_codebase` 产品化 | 子 Agent 结果在 Chat 展示 |
+| MCP 与 Cortex MCP 配置合并 | 单页配置 |
+| Checkpoint 深度统一 | accept 后回滚 UX（手测） |
+| Rules / Skills | 已注入 system，Skills UI 可选 |
 
 ## 开发顺序
 
 1. fork 能 `./scripts/code.sh` 跑起来  
-2. 确认 Cortex 里 Agent 能连 DeepSeek  
-3. 抽共享 npm 包 `@opencursor/agent-core` 进 contrib 构建  
-4. 再改 `product.json` 品牌 → 见 `REBRAND.md`
+2. 根目录 `build:agent-cli`，Settings 打开 OpenCursor agent-core  
+3. 手测清单 A 节  
+4. 品牌与安装包 → `REBRAND.md`、`npm run desktop:build`

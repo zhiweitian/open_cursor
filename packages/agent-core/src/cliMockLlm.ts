@@ -2,6 +2,7 @@
  * Headless / CI mock LLM for agent CLI. Set OPENCURSOR_MOCK_LLM:
  * - fast — single reply "mock-ok"
  * - tool — list_dir then "mock-tool-done"
+ * - review — write_file (pending patch) then "mock-review-done"
  * - slow[:ms] — delay then reply (abort tests)
  */
 import { setChatCompletionForTests, type ChatMsg } from "./llm.ts";
@@ -26,11 +27,33 @@ export function applyCliMockLlm(): boolean {
     return true;
   }
 
+  if (raw === "review") {
+    setChatCompletionForTests(async (messages) => {
+      const toolDone = messages.some((m) => m.role === "tool" && m.name === "write_file");
+      if (!toolDone) {
+        return {
+          role: "assistant",
+          content: null,
+          tool_calls: [
+            {
+              id: "mockw",
+              function: {
+                name: "write_file",
+                arguments: JSON.stringify({ path: "mock-patch.txt", content: "new\n" }),
+              },
+            },
+          ],
+        } satisfies ChatMsg;
+      }
+      return { role: "assistant", content: "mock-review-done" };
+    });
+    return true;
+  }
+
   if (raw === "tool") {
-    let turn = 0;
-    setChatCompletionForTests(async () => {
-      turn++;
-      if (turn === 1) {
+    setChatCompletionForTests(async (messages) => {
+      const toolDone = messages.some((m) => m.role === "tool" && m.name === "list_dir");
+      if (!toolDone) {
         return {
           role: "assistant",
           content: null,
