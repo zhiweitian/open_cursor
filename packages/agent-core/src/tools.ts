@@ -7,6 +7,7 @@ import { applyWriteImmediate, stageWrite } from "./runs.ts";
 import { saveTodos, type TodoItem } from "./todos.ts";
 import { stageQuestion, switchMode, type AskOption } from "./session.ts";
 import { replaceNotebookCell } from "./notebook.ts";
+import { awaitShellJob, startShellJob } from "./shellJobs.ts";
 import { workspace } from "./workspace.ts";
 
 export { workspace };
@@ -197,6 +198,26 @@ export const builtinToolDefs = [
   {
     type: "function" as const,
     function: {
+      name: "shell_start",
+      description: "在后台启动一条 shell，立刻返回 job id。再用 await_shell 等待结果。",
+      parameters: { type: "object", properties: { command: { type: "string" } }, required: ["command"] },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "await_shell",
+      description: "等待后台 shell。job_id 来自 shell_start。timeout_ms 默认 5000，最多 30000。",
+      parameters: {
+        type: "object",
+        properties: { job_id: { type: "string" }, timeout_ms: { type: "string" } },
+        required: ["job_id"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
       name: "explore_codebase",
       description: "启动只读子 Agent 探索代码库（搜索+读文件，不改磁盘）",
       parameters: {
@@ -337,6 +358,17 @@ export async function runTool(name: string, args: Record<string, string>, ctx: T
       maxBuffer: 2_000_000,
     });
     return (out || "(无输出)").slice(0, 20_000);
+  }
+  if (name === "shell_start") {
+    if (!ctx.allowDangerousShell && isDangerousShell(args.command || "")) {
+      return "危险命令已拦截。请在聊天勾选「允许危险 shell」后重试，或改用更安全的命令。";
+    }
+    const job = startShellJob(args.command || "", workspace);
+    return `已后台启动 ${job.id}`;
+  }
+  if (name === "await_shell") {
+    const timeout = Number(args.timeout_ms || "5000");
+    return awaitShellJob(args.job_id || "", Number.isFinite(timeout) ? timeout : 5000);
   }
   if (name === "read_lints") {
     const r = spawnSync("npm", ["run", "typecheck"], { cwd: workspace, encoding: "utf8", maxBuffer: 2_000_000 });

@@ -36,6 +36,7 @@
 | `test:todos` | `todo_write` 替换与 merge |
 | `test:session` | `ask_question` 与 `switch_mode` |
 | `test:notebook` | `edit_notebook` 改单个单元格 |
+| `test:shell-jobs` | 后台 shell 启动、等待、拦截危险命令 |
 | `test:web-file-review` | POST `/api/file` 审核写、越界路径 |
 | `test:hooks-save` | `saveHooks` 落盘 |
 | `test:web-restore` | 写文件 + restore |

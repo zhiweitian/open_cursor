@@ -95,7 +95,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 | Hooks | `loadHooks` + `fireHooks`（pre/post tool、agentStop） | 完成，已测；用户自配 shell |
 | @文件 上下文 | `expandAtMentions` + 侧边栏插入 `@path` | 完成，已测 |
 | codebase_search | `codebase_search`（rg 多词） | 完成，已测 |
-| AwaitShell / 后台任务 | — | 未做 |
+| AwaitShell / 后台任务 | `shell_start` + `await_shell` | 完成，已测（进程内任务表） |
 
 ## 复用的开源组件（不重复造轮子）
 
@@ -236,7 +236,7 @@ fork 自带 Chat/Apply/Checkpoint/MCP，若 **算「可用的类 Cursor 桌面�
 | Web chat mock | `npm run test:web-chat-mock` | 无 Key |
 | CI | `.github/workflows/test.yml` | `build:agent-cli` + `npm test` |
 | Web 审核写 | `npm run test:web-patch-review` | mock `review` |
-| 一键 | `npm test` | `typecheck` + **35 套**（`rg`/bash **可选**，缺则 skip 对应子测） |
+| 一键 | `npm test` | `typecheck` + **36 套**（`rg`/bash **可选**，缺则 skip 对应子测） |
 | 手测 / 风险清单 | **`QA-NOTES.md`** | Agent 不好测项 |
 | Web `/api/*`、扩展 UI | **无** | 曾手动 curl/Agent 测，无 CI |
 | `explore_codebase` **契约** | `npm run test:explore-contract` | 只读工具白名单，无 LLM |
