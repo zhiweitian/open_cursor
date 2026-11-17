@@ -4,6 +4,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import fg from "fast-glob";
 import { isIgnored } from "./ignore.ts";
 import { applyWriteImmediate, stageWrite } from "./runs.ts";
+import { saveTodos, type TodoItem } from "./todos.ts";
 import { workspace } from "./workspace.ts";
 
 export { workspace };
@@ -138,6 +139,21 @@ export const builtinToolDefs = [
   {
     type: "function" as const,
     function: {
+      name: "todo_write",
+      description: "更新任务清单。todos 为 JSON 数组 [{id,content,status}]，status: pending|in_progress|completed|cancelled。merge 为 true 时按 id 合并。",
+      parameters: {
+        type: "object",
+        properties: {
+          todos: { type: "string" },
+          merge: { type: "string", description: "true 则合并，否则整表替换" },
+        },
+        required: ["todos"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
       name: "explore_codebase",
       description: "启动只读子 Agent 探索代码库（搜索+读文件，不改磁盘）",
       parameters: {
@@ -165,6 +181,17 @@ function writeContent(rel: string, content: string, ctx: ToolCtx) {
 }
 
 export async function runTool(name: string, args: Record<string, string>, ctx: ToolCtx = {}): Promise<string> {
+  if (name === "todo_write") {
+    let parsed: TodoItem[] = [];
+    try {
+      parsed = JSON.parse(args.todos || "[]") as TodoItem[];
+    } catch {
+      return "todos 不是合法 JSON";
+    }
+    if (!Array.isArray(parsed)) return "todos 需要是数组";
+    const list = saveTodos(parsed, args.merge === "true");
+    return list.map((t) => `${t.status} ${t.id}: ${t.content}`).join("\n") || "(空清单)";
+  }
   if (name === "explore_codebase") {
     const { runExplore } = await import("./explore-agent.ts");
     return runExplore(args.task || "");
