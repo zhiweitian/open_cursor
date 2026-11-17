@@ -15,10 +15,14 @@ export function applyCliMockLlm(): boolean {
   if (!raw) return false;
 
   if (raw === "fast") {
-    setChatCompletionForTests(async () => ({
-      role: "assistant",
-      content: "mock-ok",
-    }));
+    setChatCompletionForTests(async (messages) => {
+      const lastUser = [...messages].reverse().find((m) => m.role === "user");
+      const text = String(lastUser?.content ?? "");
+      if (text.includes("只回复：ok") || text.includes("只回复:ok")) {
+        return { role: "assistant", content: "ok" };
+      }
+      return { role: "assistant", content: "mock-ok" };
+    });
     return true;
   }
 

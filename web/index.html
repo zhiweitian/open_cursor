@@ -37,7 +37,9 @@
     let runId = null;
 
     fetch("/api/config").then((r) => r.json()).then((c) => {
-      $("badge").textContent = c.hasKey ? `${c.model}` : "先去配置模型";
+      $("badge").textContent = c.hasKey
+        ? `${c.model}`
+        : "无 Key：可设 OPENCURSOR_MOCK_LLM=fast 后重启";
     });
 
     function renderTree(nodes, depth = 0) {

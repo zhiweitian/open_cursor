@@ -32,6 +32,8 @@
 | `test:explore-contract` | `EXPLORE_READ_ONLY_TOOLS` 与 builtin 对齐 |
 | `test:explore-loop` | `explore_codebase` 多轮 + mock LLM |
 | `test:hooks-save` | `saveHooks` 落盘 |
+| `test:web-restore` | 写文件 + restore |
+| `test:web-chat-mock` | mock chat + GET run + POST `/api/test` |
 | `npm test` 首步 | `typecheck` |
 
 ## Agent 不好测 / 需你本机验证

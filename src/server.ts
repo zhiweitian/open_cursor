@@ -27,7 +27,10 @@ import {
   saveMcpConfig,
   stageWrite,
   workspace,
+  applyCliMockLlm,
 } from "@opencursor/agent-core";
+
+applyCliMockLlm();
 
 const types: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
