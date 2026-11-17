@@ -1,5 +1,7 @@
 import readline from "node:readline";
-import { createRun, runAgent } from "@opencursor/agent-core";
+import { applyCliMockLlm, createRun, runAgent } from "@opencursor/agent-core";
+
+applyCliMockLlm();
 
 const once = process.argv.slice(2).join(" ").trim();
 if (once) {
