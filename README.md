@@ -57,8 +57,17 @@ npm run cli -- "问题"
 ## 测试
 
 ```bash
-npm run test:tools
+npm test                 # typecheck + 27 套（见 QA-NOTES.md）
+npm run build:agent-cli  # 打包 CLI 后再跑 test:cli-bundle / test:agent-cli-mock
 ```
+
+无 API Key：`OPENCURSOR_MOCK_LLM=tool`（见 `AGENTS.md`）。
+
+## 版本控制
+
+- **根目录**：agent-core、Web、扩展、测试脚本（`git` 在仓库根）
+- **`desktop/cortexide/`**：独立 git 仓库（OpenCursor IPC 改动在此提交，勿当普通子目录删改）
+- **`data/`、`dist/`**：已 gitignore，勿提交 Key
 
 ## 目标
 
