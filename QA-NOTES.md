@@ -35,6 +35,7 @@
 | `test:skills-rules` | skills + AGENTS.md + `.cursor/rules` |
 | `test:context-budget` | 单次 run 内丢掉过长的旧消息 |
 | `test:complete` | 文件内标识符补全 |
+| `test:complete-model` | 独立补全 URL，失败回退本地 |
 | `test:symbols` | function/class/type/const 行扫描 |
 | `test:inline-edit` | 按行替换，含审核模式 |
 | `test:file-index` | ripgrep 文件列表缓存后搜索 |

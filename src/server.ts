@@ -28,7 +28,7 @@ import {
   stageWrite,
   workspace,
   applyCliMockLlm,
-  completeAt,
+  completeText,
   listSymbols,
   loadQuestion,
   loadMode,
@@ -206,7 +206,8 @@ const server = createServer(async (req, res) => {
       const body = await readBody(req);
       const text = String(body.text ?? "");
       const cursor = Number(body.cursor ?? text.length);
-      return send(res, 200, { completion: completeAt(text, Number.isFinite(cursor) ? cursor : text.length) });
+      const out = await completeText(text, Number.isFinite(cursor) ? cursor : text.length);
+      return send(res, 200, out);
     }
     if (req.method === "POST" && url.pathname === "/api/chat") {
       const body = await readBody(req);

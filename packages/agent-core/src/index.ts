@@ -25,7 +25,7 @@ export { loadSelection, setSelection, clearSelection, selectionContext, type Edi
 export { loadOpenFile, setOpenFile, openFileContext } from "./openFile.ts";
 export { loadAutomations, saveAutomations, dueAutomations, tickAutomations, type Automation } from "./automations.ts";
 export { replaceNotebookCell } from "./notebook.ts";
-export { completeAt } from "./complete.ts";
+export { completeAt, completeText } from "./complete.ts";
 export { listSymbols, type SymbolHit } from "./symbols.ts";
 export { replaceLineRange } from "./editRange.ts";
 export { grepFileIndex, parseFileList, refreshFileIndex } from "./fileIndex.ts";

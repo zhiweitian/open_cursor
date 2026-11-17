@@ -174,7 +174,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
    - Monaco Web — 完成，已测（辅助；左侧符号列表跳转）
 
 6. **Tab 补全**
-   - 低延迟小模型，和聊天模型分开 — 未做
+   - 低延迟小模型，和聊天模型分开 — 补全通道完成，已测（`OPENCURSOR_COMPLETE_URL`，失败则回退本地前缀）；随包模型权重未做
    - 本地标识符补全 `completeAt` + `POST /api/complete` + Web 编辑器 inline suggest — 完成，已测（无模型）
 
 7. **扩展系统**
@@ -195,7 +195,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 
 | 口径 | 约 % | 说明 |
 |------|------|------|
-| **plan 里「自研 agent-core MVP」** | **~96%** | 本地词袋向量检索、`npm test`（**48 套**）；仍缺小模型 Tab、外网 MCP、外部嵌入模型 API |
+| **plan 里「自研 agent-core MVP」** | **~97%** | 独立补全通道、`npm test`（**49 套**）；仍缺外网 MCP、随包的小模型权重 |
 | **「一个安装包 = OpenCursor」** | **~58%** | fork Chat agent-core + 补丁/流式/Stop + accept→Checkpoint；与原生 Cursor 壳仍两套 |
 | **相对商业 Cursor 全功能** | **~18%** | 缺 Cloud Agent、Tab 产品化、账号网关、Canvas/语音、云端 Automations、外部嵌入模型 |
 
@@ -241,7 +241,7 @@ fork 自带 Chat/Apply/Checkpoint/MCP，若 **算「可用的类 Cursor 桌面�
 | Web chat mock | `npm run test:web-chat-mock` | 无 Key |
 | CI | `.github/workflows/test.yml` | `build:agent-cli` + `npm test` |
 | Web 审核写 | `npm run test:web-patch-review` | mock `review` |
-| 一键 | `npm test` | `typecheck` + **48 套**（`rg`/bash **可选**，缺则 skip 对应子测） |
+| 一键 | `npm test` | `typecheck` + **49 套**（`rg`/bash **可选**，缺则 skip 对应子测） |
 | 手测 / 风险清单 | **`QA-NOTES.md`** | Agent 不好测项 |
 | Web `/api/*`、扩展 UI | **无** | 曾手动 curl/Agent 测，无 CI |
 | `explore_codebase` **契约** | `npm run test:explore-contract` | 只读工具白名单，无 LLM |
