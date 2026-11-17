@@ -29,8 +29,11 @@ try {
   assert("skill name", skills.length === 1 && skills[0]!.name === "Demo");
 
   writeFileSync(join(ws, "AGENTS.md"), "always use chinese\n");
+  mkdirSync(join(ws, ".cursor", "rules"), { recursive: true });
+  writeFileSync(join(ws, ".cursor", "rules", "style.mdc"), "prefer short diffs\n");
   const rules = listRules();
   assert("agents.md rule", rules.some((r) => r.path === "AGENTS.md" && r.bytes > 0));
+  assert("cursor rule file", rules.some((r) => r.path.replaceAll("\\", "/").endsWith(".cursor/rules/style.mdc")));
 } finally {
   rmSync(ws, { recursive: true, force: true });
 }
