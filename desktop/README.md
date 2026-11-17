@@ -28,7 +28,9 @@ opencursor/
 └── extension/             ← 轻量 VS Code 扩展（可选，调试 Agent 逻辑）
 ```
 
-**当前状态**：fork 已拉取；**Agent 仍主要在 agent-core + extension**。下一步按 `INTEGRATION.md` 把模型配置与工具层并进 `src/vs/workbench/contrib/cortexide/`。
+**当前状态**：fork 内已接入 **OpenCursor agent-core**（Chat IPC、补丁 UI、状态栏；本地 fork 提交 `732cee76`）。`desktop/cortexide` **不在** 根仓库 git 树内，请在 `desktop/cortexide` 目录单独 `git log`。
+
+**Agent 仍主要在** `packages/agent-core` + 本 fork 桥接。见 `INTEGRATION.md`。
 
 ## 更新 fork
 
