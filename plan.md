@@ -86,7 +86,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 | Shell | `shell` | 完成，已测 |
 | ReadLints | `read_lints`（typecheck） | 完成，已测 |
 | EditNotebook | `edit_notebook` 改 `.ipynb` 单元格 | 完成，已测 |
-| WebSearch / WebFetch | MCP `@modelcontextprotocol/server-fetch`（可选） | MCP 完成，fetch 未测 |
+| WebSearch / WebFetch | `web_fetch` 抓 http(s) 正文 | fetch 完成，已测；网页搜索未做 |
 | MCP 动态工具 | `mcp_{server}__{tool}` | 完成，未测（默认 fetch 关闭） |
 | Task 子 Agent | `explore_codebase` 只读子 Agent | 完成，已测（`test:explore-loop` mock LLM） |
 | TodoWrite / AskQuestion / SwitchMode | `todo_write`、`ask_question`、`switch_mode` | 完成，已测（选择题只落盘，界面未接） |
@@ -190,7 +190,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 
 | 口径 | 约 % | 说明 |
 |------|------|------|
-| **plan 里「自研 agent-core MVP」** | **~83%** | Web 文件审核写、rules 扫描、`npm test`（**31 套**）；仍缺 MCP 真连接、Tab 补全 |
+| **plan 里「自研 agent-core MVP」** | **~84%** | 内置工具表已齐（含 fetch / 后台 shell / notebook）、`npm test`（**37 套**）；仍缺网页搜索、MCP 真连接、Tab 补全 |
 | **「一个安装包 = OpenCursor」** | **~58%** | fork Chat agent-core + 补丁/流式/Stop + accept→Checkpoint；与原生 Cursor 壳仍两套 |
 | **相对商业 Cursor 全功能** | **~18%** | 缺 Cloud Agent、Tab 产品化、账号网关、Canvas/语音/Automations、embeddings/符号索引 |
 
@@ -236,7 +236,7 @@ fork 自带 Chat/Apply/Checkpoint/MCP，若 **算「可用的类 Cursor 桌面�
 | Web chat mock | `npm run test:web-chat-mock` | 无 Key |
 | CI | `.github/workflows/test.yml` | `build:agent-cli` + `npm test` |
 | Web 审核写 | `npm run test:web-patch-review` | mock `review` |
-| 一键 | `npm test` | `typecheck` + **36 套**（`rg`/bash **可选**，缺则 skip 对应子测） |
+| 一键 | `npm test` | `typecheck` + **37 套**（`rg`/bash **可选**，缺则 skip 对应子测） |
 | 手测 / 风险清单 | **`QA-NOTES.md`** | Agent 不好测项 |
 | Web `/api/*`、扩展 UI | **无** | 曾手动 curl/Agent 测，无 CI |
 | `explore_codebase` **契约** | `npm run test:explore-contract` | 只读工具白名单，无 LLM |

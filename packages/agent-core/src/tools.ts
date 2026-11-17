@@ -8,6 +8,7 @@ import { saveTodos, type TodoItem } from "./todos.ts";
 import { stageQuestion, switchMode, type AskOption } from "./session.ts";
 import { replaceNotebookCell } from "./notebook.ts";
 import { awaitShellJob, startShellJob } from "./shellJobs.ts";
+import { fetchUrlText } from "./webFetch.ts";
 import { workspace } from "./workspace.ts";
 
 export { workspace };
@@ -218,6 +219,14 @@ export const builtinToolDefs = [
   {
     type: "function" as const,
     function: {
+      name: "web_fetch",
+      description: "抓取 http(s) 页面正文，最多 5 万字符。不支持网页搜索。",
+      parameters: { type: "object", properties: { url: { type: "string" } }, required: ["url"] },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
       name: "explore_codebase",
       description: "启动只读子 Agent 探索代码库（搜索+读文件，不改磁盘）",
       parameters: {
@@ -281,6 +290,9 @@ export async function runTool(name: string, args: Record<string, string>, ctx: T
     } catch (e) {
       return e instanceof Error ? e.message : String(e);
     }
+  }
+  if (name === "web_fetch") {
+    return fetchUrlText(args.url || "");
   }
   if (name === "explore_codebase") {
     const { runExplore } = await import("./explore-agent.ts");
