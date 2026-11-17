@@ -31,6 +31,7 @@
 | `test:file-tools` | read/search_replace/list/glob；grep/codebase **若无 rg 则 skip**；shell **若无 bash 则 skip** |
 | `test:explore-contract` | `EXPLORE_READ_ONLY_TOOLS` 与 builtin 对齐 |
 | `test:explore-loop` | `explore_codebase` 多轮 + mock LLM |
+| `test:skills-rules` | 临时目录 skills + AGENTS.md |
 | `test:hooks-save` | `saveHooks` 落盘 |
 | `test:web-restore` | 写文件 + restore |
 | `test:web-chat-mock` | mock chat + GET run + POST `/api/test` |

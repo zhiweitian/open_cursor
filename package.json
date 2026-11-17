@@ -44,8 +44,9 @@
     "test:ping-mock": "tsx src/test-ping-mock.ts",
     "test:web-restore": "tsx src/test-web-restore.ts",
     "test:web-chat-mock": "tsx src/test-web-chat-mock.ts",
+    "test:skills-rules": "tsx src/test-skills-rules.ts",
     "test:web-patch-review": "tsx src/test-web-patch-review.ts",
-    "test": "npm run typecheck && npm run test:tools && npm run test:at-context && npm run test:patches && npm run test:cli-bundle && npm run test:agent-cli-smoke && npm run test:agent-cli-mock && npm run test:agent-cli-abort && npm run test:agent-loop && npm run test:agent-llm-delta && npm run test:agent-abort-signal && npm run test:ping-mock && npm run test:diff && npm run test:sse && npm run test:mcp-config && npm run test:mcp-hub && npm run test:hooks && npm run test:hooks-save && npm run test:runs-workspace && npm run test:config-workspace && npm run test:workspace-env && npm run test:shell-guard && npm run test:file-tools && npm run test:explore-contract && npm run test:explore-loop && npm run test:web-api && npm run test:web-mcp-probe && npm run test:web-restore && npm run test:web-chat-mock && npm run test:web-patch-review"
+    "test": "npm run typecheck && npm run test:tools && npm run test:at-context && npm run test:patches && npm run test:cli-bundle && npm run test:agent-cli-smoke && npm run test:agent-cli-mock && npm run test:agent-cli-abort && npm run test:agent-loop && npm run test:agent-llm-delta && npm run test:agent-abort-signal && npm run test:ping-mock && npm run test:diff && npm run test:sse && npm run test:mcp-config && npm run test:mcp-hub && npm run test:hooks && npm run test:hooks-save && npm run test:runs-workspace && npm run test:config-workspace && npm run test:workspace-env && npm run test:shell-guard && npm run test:file-tools && npm run test:explore-contract && npm run test:explore-loop && npm run test:skills-rules && npm run test:web-api && npm run test:web-mcp-probe && npm run test:web-restore && npm run test:web-chat-mock && npm run test:web-patch-review"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",

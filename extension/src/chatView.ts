@@ -3,6 +3,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import {
   acceptPatch,
+  applyCliMockLlm,
   createRun,
   rejectPatch,
   runAgent,
@@ -36,6 +37,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
           return;
         }
         setWorkspace(root);
+        applyCliMockLlm();
         const cfg = vscode.workspace.getConfiguration("openCursor");
         setConfigOverride({
           apiKey: cfg.get<string>("apiKey") || process.env.DEEPSEEK_API_KEY || "",
@@ -50,6 +52,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             runId: run.id,
             reviewWrites: msg.reviewWrites !== false,
             allowDangerousShell: Boolean(msg.allowDangerousShell),
+            useMcp: cfg.get<boolean>("useMcp") !== false,
           });
           webviewView.webview.postMessage({ type: "result", ...out, runId: run.id });
         } catch (e) {

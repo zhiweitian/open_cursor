@@ -57,6 +57,11 @@
           "type": "boolean",
           "default": true,
           "description": "写入前 diff 审核"
+        },
+        "openCursor.useMcp": {
+          "type": "boolean",
+          "default": true,
+          "description": "连接工作区 data/mcp.json 里已启用的 MCP（可用 OPENCURSOR_MOCK_LLM 无 Key 调试）"
         }
       }
     }
