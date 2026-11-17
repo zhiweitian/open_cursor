@@ -19,6 +19,7 @@ export { buildTree } from "./tree.ts";
 export { expandAtMentions } from "./context.ts";
 export { trimChatMessages } from "./contextBudget.ts";
 export { loadTodos, saveTodos, type TodoItem, type TodoStatus } from "./todos.ts";
+export { stageQuestion, switchMode, type AskOption, type StagedQuestion } from "./session.ts";
 export { syncDeepSeekConfigFromEnv } from "./syncConfigFromCortexide.ts";
 export { EXPLORE_READ_ONLY_TOOLS } from "./explore-agent.ts";
 export {

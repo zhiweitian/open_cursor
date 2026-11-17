@@ -34,6 +34,7 @@
 | `test:skills-rules` | skills + AGENTS.md + `.cursor/rules` |
 | `test:context-budget` | 单次 run 内丢掉过长的旧消息 |
 | `test:todos` | `todo_write` 替换与 merge |
+| `test:session` | `ask_question` 与 `switch_mode` |
 | `test:web-file-review` | POST `/api/file` 审核写、越界路径 |
 | `test:hooks-save` | `saveHooks` 落盘 |
 | `test:web-restore` | 写文件 + restore |

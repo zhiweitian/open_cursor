@@ -1,0 +1,51 @@
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { runTool, setWorkspace } from "@opencursor/agent-core";
+
+let ok = 0;
+let fail = 0;
+function assert(name: string, cond: boolean) {
+  if (cond) {
+    ok++;
+    console.log("✓", name);
+  } else {
+    fail++;
+    console.log("✗", name);
+  }
+}
+
+const ws = mkdtempSync(join(tmpdir(), "opencursor-session-"));
+setWorkspace(ws);
+
+try {
+  const asked = await runTool(
+    "ask_question",
+    {
+      prompt: "用哪种写法？",
+      options: JSON.stringify([
+        { id: "a", label: "简短" },
+        { id: "b", label: "详细" },
+      ]),
+    },
+    {},
+  );
+  assert("ask text", asked.includes("用哪种写法"));
+  const saved = JSON.parse(readFileSync(join(ws, "data", "question.json"), "utf8")) as { options: unknown[] };
+  assert("question file", saved.options.length === 2);
+
+  const few = await runTool("ask_question", { prompt: "x", options: "[]" }, {});
+  assert("needs two options", few.includes("至少需要两个"));
+
+  const mode = await runTool("switch_mode", { mode: "plan" }, {});
+  assert("switch plan", mode.includes("plan"));
+  assert("mode file", existsSync(join(ws, "data", "mode.json")));
+
+  const bad = await runTool("switch_mode", { mode: "yolo" }, {});
+  assert("rejects unknown mode", bad.includes("agent 或 plan"));
+} finally {
+  rmSync(ws, { recursive: true, force: true });
+}
+
+console.log(`\n${ok} passed, ${fail} failed`);
+process.exit(fail ? 1 : 0);

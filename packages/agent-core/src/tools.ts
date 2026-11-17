@@ -5,6 +5,7 @@ import fg from "fast-glob";
 import { isIgnored } from "./ignore.ts";
 import { applyWriteImmediate, stageWrite } from "./runs.ts";
 import { saveTodos, type TodoItem } from "./todos.ts";
+import { stageQuestion, switchMode, type AskOption } from "./session.ts";
 import { workspace } from "./workspace.ts";
 
 export { workspace };
@@ -154,6 +155,30 @@ export const builtinToolDefs = [
   {
     type: "function" as const,
     function: {
+      name: "ask_question",
+      description: "向用户提一个选择题。options 为 JSON 数组 [{id,label}]，至少两项。",
+      parameters: {
+        type: "object",
+        properties: { prompt: { type: "string" }, options: { type: "string" } },
+        required: ["prompt", "options"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "switch_mode",
+      description: "切换工作模式：agent 或 plan。",
+      parameters: {
+        type: "object",
+        properties: { mode: { type: "string" } },
+        required: ["mode"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
       name: "explore_codebase",
       description: "启动只读子 Agent 探索代码库（搜索+读文件，不改磁盘）",
       parameters: {
@@ -191,6 +216,19 @@ export async function runTool(name: string, args: Record<string, string>, ctx: T
     if (!Array.isArray(parsed)) return "todos 需要是数组";
     const list = saveTodos(parsed, args.merge === "true");
     return list.map((t) => `${t.status} ${t.id}: ${t.content}`).join("\n") || "(空清单)";
+  }
+  if (name === "ask_question") {
+    let options: AskOption[] = [];
+    try {
+      options = JSON.parse(args.options || "[]") as AskOption[];
+    } catch {
+      return "options 不是合法 JSON";
+    }
+    if (!Array.isArray(options)) return "options 需要是数组";
+    return stageQuestion(args.prompt || "", options);
+  }
+  if (name === "switch_mode") {
+    return switchMode(args.mode || "");
   }
   if (name === "explore_codebase") {
     const { runExplore } = await import("./explore-agent.ts");
