@@ -40,6 +40,7 @@ import {
   setOpenFile,
   loadAutomations,
   tickAutomations,
+  runDueAutomations,
   loadTodos,
   setTodoStatus,
   answerQuestion,
@@ -160,6 +161,12 @@ const server = createServer(async (req, res) => {
         due: due.map((item) => ({ id: item.id, prompt: item.prompt })),
         automations: loadAutomations(),
       });
+    }
+    if (req.method === "POST" && url.pathname === "/api/automations/run") {
+      const body = await readBody(req);
+      const now = Number(body.now);
+      const runs = await runDueAutomations(Number.isFinite(now) ? now : Date.now());
+      return send(res, 200, { runs, automations: loadAutomations() });
     }
     if (req.method === "GET" && url.pathname === "/api/session") {
       return send(res, 200, {

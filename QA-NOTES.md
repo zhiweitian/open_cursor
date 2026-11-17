@@ -42,6 +42,7 @@
 | `test:file-index` | ripgrep 文件列表缓存后搜索 |
 | `test:selection` | 编辑器选区写入会话并出现在提示里 |
 | `test:automations` | 保存自动化并判断是否到期 |
+| `test:automation-run` | 到期项交给 Agent，模拟模型回复 |
 | `test:open-file` | 编辑器当前文件进入会话和提示 |
 | `test:embeddings` | 本地词袋向量建索引并按相似度排序 |
 | `test:todos` | `todo_write`、状态更新、未完成项进入提示 |

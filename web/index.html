@@ -181,6 +181,9 @@
       const button = document.createElement("button");
       button.className = "ghost";
       button.textContent = "检查到期";
+      const run = document.createElement("button");
+      run.className = "ghost";
+      run.textContent = "跑到期的";
       const due = document.createElement("p");
       due.id = "automation-due";
       button.onclick = async () => {
@@ -192,8 +195,20 @@
         const j = await r.json();
         due.textContent = j.due?.length ? `到期：${j.due.map((item) => item.prompt).join("；")}` : "没有到期";
       };
+      run.onclick = async () => {
+        const r = await fetch("/api/automations/run", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: "{}",
+        });
+        const j = await r.json();
+        due.textContent = j.runs?.length
+          ? j.runs.map((item) => `${item.prompt} → ${item.text}`).join("；")
+          : "没有到期的自动化";
+      };
       box.appendChild(line);
       box.appendChild(button);
+      box.appendChild(run);
       box.appendChild(due);
     }
 

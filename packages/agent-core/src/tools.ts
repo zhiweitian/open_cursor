@@ -14,7 +14,7 @@ import { replaceLineRange } from "./editRange.ts";
 import { grepFileIndex, refreshFileIndex } from "./fileIndex.ts";
 import { refreshEmbeddings, searchEmbeddings } from "./embeddings.ts";
 import { setGoal, updateGoal } from "./goals.ts";
-import { saveAutomations, type Automation } from "./automations.ts";
+import { saveAutomations, runDueAutomations, type Automation } from "./automations.ts";
 import { workspace } from "./workspace.ts";
 
 export { workspace };
@@ -197,7 +197,7 @@ export const builtinToolDefs = [
     type: "function" as const,
     function: {
       name: "automation_write",
-      description: "保存本地自动化。automations 为 JSON 数组 [{id,prompt,everyMs,enabled}]。everyMs 至少 1000。到期检查不会自动调用模型。merge 为 true 时按 id 合并。",
+      description: "保存本地自动化。automations 为 JSON 数组 [{id,prompt,everyMs,enabled}]。everyMs 至少 1000。merge 为 true 时按 id 合并。",
       parameters: {
         type: "object",
         properties: {
@@ -206,6 +206,14 @@ export const builtinToolDefs = [
         },
         required: ["automations"],
       },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "automation_run",
+      description: "跑当前已到期的自动化，每条提示交给 Agent。没有常驻定时进程。now 可选，用于测试。",
+      parameters: { type: "object", properties: { now: { type: "string" } } },
     },
   },
   {
@@ -393,6 +401,12 @@ export async function runTool(name: string, args: Record<string, string>, ctx: T
     if (!Array.isArray(parsed)) return "automations 需要是数组";
     const list = saveAutomations(parsed, args.merge === "true");
     return list.map((item) => `${item.id}: ${item.prompt}`).join("\n") || "(空)";
+  }
+  if (name === "automation_run") {
+    const now = Number(args.now);
+    const runs = await runDueAutomations(Number.isFinite(now) ? now : Date.now());
+    if (!runs.length) return "没有到期的自动化";
+    return runs.map((item) => `${item.id}: ${item.text}`).join("\n");
   }
   if (name === "ask_question") {
     let options: AskOption[] = [];

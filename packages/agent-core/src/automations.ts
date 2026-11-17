@@ -70,3 +70,14 @@ export function tickAutomations(now = Date.now()): Automation[] {
   writeFileSync(path(), JSON.stringify({ automations: next }, null, 2));
   return due;
 }
+
+export async function runDueAutomations(now = Date.now()) {
+  const due = tickAutomations(now);
+  const { runAgent } = await import("./agent.ts");
+  const runs: { id: string; prompt: string; text: string }[] = [];
+  for (const item of due) {
+    const out = await runAgent(item.prompt, { reviewWrites: true, useMcp: false });
+    runs.push({ id: item.id, prompt: item.prompt, text: out.text });
+  }
+  return runs;
+}

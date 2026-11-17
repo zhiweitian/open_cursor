@@ -23,7 +23,7 @@ export { stageQuestion, switchMode, loadQuestion, loadMode, answerQuestion, sess
 export { loadGoal, setGoal, updateGoal, goalContext, type Goal, type GoalStatus } from "./goals.ts";
 export { loadSelection, setSelection, clearSelection, selectionContext, type EditorSelection } from "./selection.ts";
 export { loadOpenFile, setOpenFile, openFileContext } from "./openFile.ts";
-export { loadAutomations, saveAutomations, dueAutomations, tickAutomations, type Automation } from "./automations.ts";
+export { loadAutomations, saveAutomations, dueAutomations, tickAutomations, runDueAutomations, type Automation } from "./automations.ts";
 export { replaceNotebookCell } from "./notebook.ts";
 export { completeAt, completeText } from "./complete.ts";
 export { listSymbols, type SymbolHit } from "./symbols.ts";
