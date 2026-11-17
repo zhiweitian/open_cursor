@@ -33,6 +33,9 @@ import {
   loadQuestion,
   loadMode,
   loadGoal,
+  loadSelection,
+  setSelection,
+  clearSelection,
   answerQuestion,
 } from "@opencursor/agent-core";
 
@@ -133,7 +136,7 @@ const server = createServer(async (req, res) => {
       return send(res, 200, { ok: true, runId: run.id });
     }
     if (req.method === "GET" && url.pathname === "/api/session") {
-      return send(res, 200, { mode: loadMode(), question: loadQuestion(), goal: loadGoal() });
+      return send(res, 200, { mode: loadMode(), question: loadQuestion(), goal: loadGoal(), selection: loadSelection() });
     }
     if (req.method === "POST" && url.pathname === "/api/session/answer") {
       const body = await readBody(req);
@@ -144,6 +147,22 @@ const server = createServer(async (req, res) => {
       const p = url.searchParams.get("path");
       if (!p) return send(res, 400, { error: "缺少 path" });
       return send(res, 200, { path: p, symbols: listSymbols(readFileSync(inside(p), "utf8")) });
+    }
+    if (req.method === "POST" && url.pathname === "/api/selection") {
+      const body = await readBody(req);
+      if (body.clear) {
+        clearSelection();
+        return send(res, 200, { ok: true, text: "已清除选区", selection: null });
+      }
+      const rel = relative(workspace, inside(String(body.path || "")));
+      const text = setSelection({
+        path: rel,
+        startLine: Number(body.startLine),
+        endLine: Number(body.endLine),
+        text: String(body.text ?? ""),
+      });
+      const selection = loadSelection();
+      return send(res, 200, { ok: Boolean(selection), text, selection });
     }
     if (req.method === "POST" && url.pathname === "/api/complete") {
       const body = await readBody(req);

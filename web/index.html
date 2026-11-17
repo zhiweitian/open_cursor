@@ -95,6 +95,24 @@
         g.textContent = `目标：${s.goal.title}（${s.goal.status}）`;
         el.appendChild(g);
       }
+      if (s.selection && s.selection.path) {
+        const line = document.createElement("p");
+        line.id = "selection";
+        line.textContent = `选区：${s.selection.path}:${s.selection.startLine}-${s.selection.endLine}`;
+        const clear = document.createElement("button");
+        clear.className = "ghost";
+        clear.textContent = "清除选区";
+        clear.onclick = async () => {
+          await fetch("/api/selection", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ clear: true }),
+          });
+          refreshSession();
+        };
+        el.appendChild(line);
+        el.appendChild(clear);
+      }
       if (!s.question) return;
       const p = document.createElement("p");
       p.textContent = s.question.prompt;

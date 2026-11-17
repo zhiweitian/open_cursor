@@ -22,6 +22,7 @@
   <div id="bar">
     <span id="path"></span>
     <button id="save">保存</button>
+    <button id="attach" class="ghost">附到聊天</button>
     <label style="font-size:12px;color:var(--mute)"><input id="review" type="checkbox" checked /> 走 diff 审核</label>
     <span id="log"></span>
   </div>
@@ -83,6 +84,27 @@
       });
     };
     document.head.appendChild(s);
+    $("attach").onclick = async () => {
+      if (!editor) {
+        $("log").textContent = "编辑器还没准备好";
+        return;
+      }
+      const sel = editor.getSelection();
+      const model = editor.getModel();
+      const text = sel && model ? model.getValueInRange(sel) : "";
+      const r = await fetch("/api/selection", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          path: rel,
+          startLine: sel ? sel.startLineNumber : 0,
+          endLine: sel ? sel.endLineNumber : 0,
+          text,
+        }),
+      });
+      const j = await r.json();
+      $("log").textContent = j.text || j.error || "失败";
+    };
     $("save").onclick = async () => {
       const r = await fetch("/api/file", {
         method: "POST",
