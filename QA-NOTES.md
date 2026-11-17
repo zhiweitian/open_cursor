@@ -12,6 +12,7 @@
 | `test:patches` | stageWrite / accept / reject / syncDeepSeek |
 | `test:cli-bundle` | `opencursor-patches.mjs` list / accept / reject |
 | `test:mcp-hub` | `McpHub.connectAll` 跳过 disabled server（无子进程） |
+| `test:mcp-live` | 本地 stdio MCP list + call |
 | `test:hooks` | `loadHooks` + `fireHooks` 执行与 env |
 | `test:workspace-env` | 子进程 `OPENCURSOR_WORKSPACE` |
 | `test:web-mcp-probe` | 隔离目录 POST `/api/mcp/probe`（无子进程） |

@@ -87,7 +87,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 | ReadLints | `read_lints`（typecheck） | 完成，已测 |
 | EditNotebook | `edit_notebook` 改 `.ipynb` 单元格 | 完成，已测 |
 | WebSearch / WebFetch | `web_fetch` + `web_search` | 完成，已测（搜索需 `OPENCURSOR_SEARCH_URL`） |
-| MCP 动态工具 | `mcp_{server}__{tool}` | 完成，未测（默认 fetch 关闭） |
+| MCP 动态工具 | `mcp_{server}__{tool}` | 完成，已测（本地 echo server） |
 | Task 子 Agent | `explore_codebase` 只读子 Agent | 完成，已测（`test:explore-loop` mock LLM） |
 | TodoWrite / AskQuestion / SwitchMode | `todo_write`、`ask_question`、`switch_mode` | 完成，已测（选择题只落盘，界面未接） |
 | Skills | 扫描 `.cursor/skills`、`skills/` 注入 system | 完成，已测 |
@@ -174,7 +174,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
    - 低延迟小模型，和聊天模型分开 — 未做
 
 7. **扩展系统**
-   - MCP Client + 配置页 — 完成，未测（需 enabled + `/api/mcp/probe`）
+   - MCP Client + 配置页 — 完成，已测（本地 stdio echo；外网 npx fetch 仍需手测）
    - Skills 扫描注入 — 完成，已测
    - Rules（AGENTS.md / .cursor/rules）— 完成，已测
    - Hooks — 完成（`fireHooks`），已测
@@ -190,7 +190,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 
 | 口径 | 约 % | 说明 |
 |------|------|------|
-| **plan 里「自研 agent-core MVP」** | **~85%** | 内置工具含搜索接口、`npm test`（**38 套**）；仍缺 MCP 真连接、Tab 补全 |
+| **plan 里「自研 agent-core MVP」** | **~86%** | 内置工具 + 本地 MCP stdio、`npm test`（**39 套**）；仍缺 Tab 补全、外网 MCP |
 | **「一个安装包 = OpenCursor」** | **~58%** | fork Chat agent-core + 补丁/流式/Stop + accept→Checkpoint；与原生 Cursor 壳仍两套 |
 | **相对商业 Cursor 全功能** | **~18%** | 缺 Cloud Agent、Tab 产品化、账号网关、Canvas/语音/Automations、embeddings/符号索引 |
 
@@ -236,13 +236,14 @@ fork 自带 Chat/Apply/Checkpoint/MCP，若 **算「可用的类 Cursor 桌面�
 | Web chat mock | `npm run test:web-chat-mock` | 无 Key |
 | CI | `.github/workflows/test.yml` | `build:agent-cli` + `npm test` |
 | Web 审核写 | `npm run test:web-patch-review` | mock `review` |
-| 一键 | `npm test` | `typecheck` + **38 套**（`rg`/bash **可选**，缺则 skip 对应子测） |
+| 一键 | `npm test` | `typecheck` + **39 套**（`rg`/bash **可选**，缺则 skip 对应子测） |
 | 手测 / 风险清单 | **`QA-NOTES.md`** | Agent 不好测项 |
 | Web `/api/*`、扩展 UI | **无** | 曾手动 curl/Agent 测，无 CI |
 | `explore_codebase` **契约** | `npm run test:explore-contract` | 只读工具白名单，无 LLM |
 | `explore_codebase` **多轮** | `npm run test:explore-loop` | mock LLM，无 Key |
 | MCP probe（隔离） | `npm run test:web-mcp-probe` | 临时 workspace、全 disabled |
 | MCP 端到端（enabled+npx） | **无** | 需网络与子进程 |
+| MCP 本地 stdio | `npm run test:mcp-live` | echo server list + call |
 | 桌面 fork（Chat 开关、IPC、补丁 UI） | **无** | 需 `buildreact` + 本机 IDE 手测 |
 | 完整 `desktop:build` | **无** | 曾成功打过包，非每次 CI |
 
