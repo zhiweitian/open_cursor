@@ -32,6 +32,7 @@ import {
   listSymbols,
   loadQuestion,
   loadMode,
+  loadGoal,
   answerQuestion,
 } from "@opencursor/agent-core";
 
@@ -132,7 +133,7 @@ const server = createServer(async (req, res) => {
       return send(res, 200, { ok: true, runId: run.id });
     }
     if (req.method === "GET" && url.pathname === "/api/session") {
-      return send(res, 200, { mode: loadMode(), question: loadQuestion() });
+      return send(res, 200, { mode: loadMode(), question: loadQuestion(), goal: loadGoal() });
     }
     if (req.method === "POST" && url.pathname === "/api/session/answer") {
       const body = await readBody(req);

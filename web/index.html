@@ -89,6 +89,12 @@
       const s = await (await fetch("/api/session")).json();
       const el = $("session");
       el.innerHTML = "";
+      if (s.goal && s.goal.title) {
+        const g = document.createElement("p");
+        g.id = "goal";
+        g.textContent = `目标：${s.goal.title}（${s.goal.status}）`;
+        el.appendChild(g);
+      }
       if (!s.question) return;
       const p = document.createElement("p");
       p.textContent = s.question.prompt;

@@ -12,6 +12,7 @@ import { fetchUrlText, webSearch } from "./webFetch.ts";
 import { listSymbols } from "./symbols.ts";
 import { replaceLineRange } from "./editRange.ts";
 import { grepFileIndex, refreshFileIndex } from "./fileIndex.ts";
+import { setGoal, updateGoal } from "./goals.ts";
 import { workspace } from "./workspace.ts";
 
 export { workspace };
@@ -201,6 +202,30 @@ export const builtinToolDefs = [
   {
     type: "function" as const,
     function: {
+      name: "create_goal",
+      description: "设定当前唯一长期目标。会覆盖上一个目标。",
+      parameters: {
+        type: "object",
+        properties: { title: { type: "string" }, note: { type: "string" } },
+        required: ["title"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "update_goal",
+      description: "更新当前目标状态：active、done 或 cancelled。note 可选。",
+      parameters: {
+        type: "object",
+        properties: { status: { type: "string" }, note: { type: "string" } },
+        required: ["status"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
       name: "edit_notebook",
       description: "修改 .ipynb 里某一个单元格中唯一的一段文本。cell_index 从 0 开始。",
       parameters: {
@@ -330,6 +355,8 @@ export async function runTool(name: string, args: Record<string, string>, ctx: T
   if (name === "switch_mode") {
     return switchMode(args.mode || "");
   }
+  if (name === "create_goal") return setGoal(args.title || "", args.note || "");
+  if (name === "update_goal") return updateGoal(args.status || "", "note" in args ? args.note : undefined);
   if (name === "edit_notebook") {
     if (!args.path?.endsWith(".ipynb")) return "只能编辑 .ipynb";
     const abs = inside(args.path);

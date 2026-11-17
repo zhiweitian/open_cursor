@@ -32,6 +32,7 @@ writeFileSync(
     ],
   }),
 );
+writeFileSync(join(ws, "data", "goal.json"), JSON.stringify({ title: "把目标显示出来", status: "active", note: "" }));
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -61,8 +62,10 @@ try {
   if (ready) {
     const got = (await (await fetch(`http://127.0.0.1:${port}/api/session`)).json()) as {
       question?: { prompt?: string };
+      goal?: { title?: string };
     };
     assert("question listed", got.question?.prompt === "选一个");
+    assert("goal listed", got.goal?.title === "把目标显示出来");
     const page = await fetch(`http://127.0.0.1:${port}/`);
     const html = await page.text();
     assert("chat page has session", html.includes('id="session"') && html.includes("refreshSession"));

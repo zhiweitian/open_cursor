@@ -39,8 +39,8 @@
 | `test:inline-edit` | 按行替换，含审核模式 |
 | `test:file-index` | ripgrep 文件列表缓存后搜索 |
 | `test:todos` | `todo_write` 替换与 merge |
-| `test:session` | `ask_question`、`switch_mode`、记录选择 |
-| `test:web-session` | `GET /api/session` 与回答 |
+| `test:session` | `ask_question`、`switch_mode`、记录选择、当前目标 |
+| `test:web-session` | `GET /api/session` 含目标，以及回答 |
 | `test:notebook` | `edit_notebook` 改单个单元格 |
 | `test:shell-jobs` | 后台 shell 启动、等待、拦截危险命令 |
 | `test:web-fetch` | 本地 HTTP `web_fetch`，拒绝 file URL |

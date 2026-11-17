@@ -90,6 +90,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 | MCP 动态工具 | `mcp_{server}__{tool}` | 完成，已测（本地 echo server） |
 | Task 子 Agent | `explore_codebase` 只读子 Agent | 完成，已测（`test:explore-loop` mock LLM） |
 | TodoWrite / AskQuestion / SwitchMode | `todo_write`、`ask_question`、`switch_mode` | 完成，已测（Web 聊天页可点选答案） |
+| CreateGoal / UpdateGoal | `create_goal`、`update_goal` | 完成，已测（聊天页显示当前目标） |
 | Skills | 扫描 `.cursor/skills`、`skills/` 注入 system | 完成，已测 |
 | Rules | `AGENTS.md` + `.cursor/rules` 注入 system | 完成，已测 |
 | Hooks | `loadHooks` + `fireHooks`（pre/post tool、agentStop） | 完成，已测；用户自配 shell |
@@ -191,7 +192,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 
 | 口径 | 约 % | 说明 |
 |------|------|------|
-| **plan 里「自研 agent-core MVP」** | **~90%** | 文件索引 `grep_index`、`npm test`（**44 套**）；仍缺 embeddings、小模型补全、外网 MCP |
+| **plan 里「自研 agent-core MVP」** | **~91%** | 当前目标 `create_goal`、`npm test`（**44 套**）；仍缺 embeddings、小模型补全、外网 MCP |
 | **「一个安装包 = OpenCursor」** | **~58%** | fork Chat agent-core + 补丁/流式/Stop + accept→Checkpoint；与原生 Cursor 壳仍两套 |
 | **相对商业 Cursor 全功能** | **~18%** | 缺 Cloud Agent、Tab 产品化、账号网关、Canvas/语音/Automations、embeddings |
 

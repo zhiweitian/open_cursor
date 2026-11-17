@@ -56,6 +56,17 @@ try {
   assert("answer recorded", answerQuestion("a").includes("简短"));
   assert("question cleared", !existsSync(join(ws, "data", "question.json")));
   assert("context has choice", sessionContext().includes("简短"));
+
+  const created = await runTool("create_goal", { title: "补齐目标", note: "先写测试" }, {});
+  assert("create goal", created.includes("补齐目标"));
+  const { goalContext } = await import("@opencursor/agent-core");
+  assert("goal in prompt", goalContext().includes("补齐目标") && goalContext().includes("active"));
+  const updated = await runTool("update_goal", { status: "done", note: "测完了" }, {});
+  assert("update goal", updated.includes("done"));
+  const empty = await runTool("create_goal", { title: "  " }, {});
+  assert("empty title", empty.includes("不能为空"));
+  const badStatus = await runTool("update_goal", { status: "later" }, {});
+  assert("bad status", badStatus.includes("active"));
 } finally {
   rmSync(ws, { recursive: true, force: true });
 }
