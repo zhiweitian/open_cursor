@@ -11,6 +11,7 @@ import { awaitShellJob, startShellJob } from "./shellJobs.ts";
 import { fetchUrlText, webSearch } from "./webFetch.ts";
 import { listSymbols } from "./symbols.ts";
 import { replaceLineRange } from "./editRange.ts";
+import { grepFileIndex, refreshFileIndex } from "./fileIndex.ts";
 import { workspace } from "./workspace.ts";
 
 export { workspace };
@@ -109,6 +110,22 @@ export const builtinToolDefs = [
         properties: { pattern: { type: "string" }, glob: { type: "string" } },
         required: ["pattern"],
       },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "refresh_file_index",
+      description: "用 ripgrep --files 重建工作区文件索引，写入 data/file-index.json。没有 rg 时改为目录遍历。",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "grep_index",
+      description: "只在已建立的文件索引里搜索。需先调用 refresh_file_index。",
+      parameters: { type: "object", properties: { pattern: { type: "string" } }, required: ["pattern"] },
     },
   },
   {
@@ -401,6 +418,11 @@ export async function runTool(name: string, args: Record<string, string>, ctx: T
       })
       .join("\n");
   }
+  if (name === "refresh_file_index") {
+    const index = refreshFileIndex();
+    return `已索引 ${index.files.length} 个文件（${index.via}）`;
+  }
+  if (name === "grep_index") return grepFileIndex(args.pattern || "");
   if (name === "grep") {
     const r = spawnSync(
       "rg",

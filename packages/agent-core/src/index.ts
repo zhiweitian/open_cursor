@@ -24,6 +24,7 @@ export { replaceNotebookCell } from "./notebook.ts";
 export { completeAt } from "./complete.ts";
 export { listSymbols, type SymbolHit } from "./symbols.ts";
 export { replaceLineRange } from "./editRange.ts";
+export { grepFileIndex, parseFileList, refreshFileIndex } from "./fileIndex.ts";
 export { fetchUrlText, webSearch } from "./webFetch.ts";
 export { syncDeepSeekConfigFromEnv } from "./syncConfigFromCortexide.ts";
 export { EXPLORE_READ_ONLY_TOOLS } from "./explore-agent.ts";

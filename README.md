@@ -57,7 +57,7 @@ npm run cli -- "问题"
 ## 测试
 
 ```bash
-npm test                 # typecheck + 43 套（见 QA-NOTES.md）
+npm test                 # typecheck + 44 套（见 QA-NOTES.md）
 npm run build:agent-cli  # 打包 CLI 后再跑 test:cli-bundle / test:agent-cli-mock
 ```
 
