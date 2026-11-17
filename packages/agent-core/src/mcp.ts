@@ -23,7 +23,7 @@ const defaultMcp: McpFile = {
       id: "fetch",
       enabled: false,
       command: "npx",
-      args: ["-y", "@modelcontextprotocol/server-fetch"],
+      args: ["-y", "@modelcontextprotocol/server-everything"],
     },
   ],
 };

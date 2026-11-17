@@ -13,6 +13,7 @@
 | `test:cli-bundle` | `opencursor-patches.mjs` list / accept / reject |
 | `test:mcp-hub` | `McpHub.connectAll` 跳过 disabled server（无子进程） |
 | `test:mcp-live` | 本地 stdio MCP list + call |
+| `test:mcp-npx` | `npx` 启动官方 everything server 并调用 echo |
 | `test:hooks` | `loadHooks` + `fireHooks` 执行与 env |
 | `test:workspace-env` | 子进程 `OPENCURSOR_WORKSPACE` |
 | `test:web-mcp-probe` | 隔离目录 POST `/api/mcp/probe`（无子进程） |
