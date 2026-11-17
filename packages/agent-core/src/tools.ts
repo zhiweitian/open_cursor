@@ -10,6 +10,7 @@ import { replaceNotebookCell } from "./notebook.ts";
 import { awaitShellJob, startShellJob } from "./shellJobs.ts";
 import { fetchUrlText, webSearch } from "./webFetch.ts";
 import { listSymbols } from "./symbols.ts";
+import { replaceLineRange } from "./editRange.ts";
 import { workspace } from "./workspace.ts";
 
 export { workspace };
@@ -244,6 +245,23 @@ export const builtinToolDefs = [
   {
     type: "function" as const,
     function: {
+      name: "inline_edit",
+      description: "替换文件中一段连续行。start_line 和 end_line 从 1 开始，含结束行。",
+      parameters: {
+        type: "object",
+        properties: {
+          path: { type: "string" },
+          start_line: { type: "string" },
+          end_line: { type: "string" },
+          new_text: { type: "string" },
+        },
+        required: ["path", "start_line", "end_line", "new_text"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
       name: "explore_codebase",
       description: "启动只读子 Agent 探索代码库（搜索+读文件，不改磁盘）",
       parameters: {
@@ -319,6 +337,18 @@ export async function runTool(name: string, args: Record<string, string>, ctx: T
   }
   if (name === "web_search") {
     return webSearch(args.query || "");
+  }
+  if (name === "inline_edit") {
+    const abs = inside(args.path);
+    const rel = relative(workspace, abs);
+    const start = Number(args.start_line);
+    const end = Number(args.end_line);
+    try {
+      const next = replaceLineRange(readFileSync(abs, "utf8"), start, end, args.new_text ?? "");
+      return writeContent(rel, next, ctx);
+    } catch (e) {
+      return e instanceof Error ? e.message : String(e);
+    }
   }
   if (name === "explore_codebase") {
     const { runExplore } = await import("./explore-agent.ts");
