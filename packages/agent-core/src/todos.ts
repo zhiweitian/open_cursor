@@ -39,3 +39,19 @@ function mergeTodos(prev: TodoItem[], incoming: TodoItem[]) {
   for (const t of incoming) map.set(t.id, t);
   return [...map.values()];
 }
+
+export function setTodoStatus(id: string, status: string): string {
+  if (!STATUSES.has(status as TodoStatus)) return "status 无效";
+  const list = loadTodos();
+  const item = list.find((t) => t.id === id);
+  if (!item) return "任务不存在";
+  item.status = status as TodoStatus;
+  saveTodos(list, false);
+  return `已更新 ${id}：${status}`;
+}
+
+export function todoContext(): string {
+  const open = loadTodos().filter((t) => t.status === "pending" || t.status === "in_progress");
+  if (!open.length) return "";
+  return `\n未完成任务：\n${open.map((t) => `- ${t.status} ${t.id}: ${t.content}`).join("\n")}`;
+}

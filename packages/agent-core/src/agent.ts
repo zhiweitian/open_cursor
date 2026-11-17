@@ -10,6 +10,7 @@ import { trimChatMessages } from "./contextBudget.ts";
 import { sessionContext } from "./session.ts";
 import { goalContext } from "./goals.ts";
 import { selectionContext } from "./selection.ts";
+import { todoContext } from "./todos.ts";
 import { builtinToolDefs, runTool, workspace, type ToolCtx } from "./tools.ts";
 
 const TOOL_MSG_MAX = 12_000;
@@ -59,7 +60,7 @@ export async function runAgent(userText: string, opts: AgentOptions = {}) {
         role: "system",
         content: `你是本地仓库里的编程助手。工作区：${workspace}。用中文简短回答。改文件前先读。复杂探索可调用 explore_codebase。${
           opts.reviewWrites ? "写入会进入待审核补丁，告知用户去界面接受。" : ""
-        }${rulesSystemBlock()}${skillsSystemBlock()}${sessionContext()}${goalContext()}${selectionContext()}`,
+        }${rulesSystemBlock()}${skillsSystemBlock()}${sessionContext()}${goalContext()}${selectionContext()}${todoContext()}`,
       },
       { role: "user", content: userContent },
     ];

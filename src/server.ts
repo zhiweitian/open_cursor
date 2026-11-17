@@ -38,6 +38,8 @@ import {
   clearSelection,
   loadAutomations,
   tickAutomations,
+  loadTodos,
+  setTodoStatus,
   answerQuestion,
 } from "@opencursor/agent-core";
 
@@ -136,6 +138,14 @@ const server = createServer(async (req, res) => {
       }
       applyWriteImmediate(run.id, pathRel, content);
       return send(res, 200, { ok: true, runId: run.id });
+    }
+    if (req.method === "GET" && url.pathname === "/api/todos") {
+      return send(res, 200, { todos: loadTodos() });
+    }
+    if (req.method === "POST" && url.pathname === "/api/todos/status") {
+      const body = await readBody(req);
+      const text = setTodoStatus(String(body.id || ""), String(body.status || ""));
+      return send(res, 200, { ok: text.startsWith("已更新"), text, todos: loadTodos() });
     }
     if (req.method === "GET" && url.pathname === "/api/automations") {
       return send(res, 200, { automations: loadAutomations() });

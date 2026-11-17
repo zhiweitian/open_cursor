@@ -17,6 +17,7 @@
     <main>
       <div id="thread"></div>
       <div id="session"></div>
+      <div id="todos"></div>
       <div id="automations"></div>
       <div id="patches"></div>
       <div class="opts">
@@ -114,6 +115,7 @@
         el.appendChild(line);
         el.appendChild(clear);
       }
+      refreshTodos();
       refreshAutomations();
       if (!s.question) return;
       const p = document.createElement("p");
@@ -132,6 +134,32 @@
           refreshSession();
         };
         el.appendChild(b);
+      }
+    }
+
+    async function refreshTodos() {
+      const box = $("todos");
+      const data = await (await fetch("/api/todos")).json();
+      box.innerHTML = "";
+      for (const item of data.todos || []) {
+        const row = document.createElement("p");
+        row.textContent = `${item.status} ${item.id}: ${item.content}`;
+        if (item.status === "pending" || item.status === "in_progress") {
+          const button = document.createElement("button");
+          button.className = "ghost";
+          button.textContent = "完成";
+          button.onclick = async () => {
+            await fetch("/api/todos/status", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ id: item.id, status: "completed" }),
+            });
+            refreshTodos();
+          };
+          row.appendChild(document.createTextNode(" "));
+          row.appendChild(button);
+        }
+        box.appendChild(row);
       }
     }
 
