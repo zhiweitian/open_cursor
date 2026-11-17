@@ -86,7 +86,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 | Shell | `shell` | 完成，已测 |
 | ReadLints | `read_lints`（typecheck） | 完成，已测 |
 | EditNotebook | `edit_notebook` 改 `.ipynb` 单元格 | 完成，已测 |
-| WebSearch / WebFetch | `web_fetch` + `web_search` | 完成，已测（搜索需 `OPENCURSOR_SEARCH_URL`） |
+| WebSearch / WebFetch | `web_fetch` + `web_search` + `browser_open` | 完成，已测（`browser_open` 只解析 HTML，不跑脚本） |
 | MCP 动态工具 | `mcp_{server}__{tool}` | 完成，已测（本地 echo server） |
 | Task 子 Agent | `explore_codebase` 只读子 Agent | 完成，已测（`test:explore-loop` mock LLM） |
 | TodoWrite / AskQuestion / SwitchMode | `todo_write`、`ask_question`、`switch_mode` | 完成，已测（聊天页可点完成；未完成项进入系统提示） |
@@ -188,16 +188,17 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
    - 鉴权、配额、BYOK — 未做（目前是本地配 Key，算 BYOK 雏形，未当产品功能测）
 
 9. **完整产品**
-   - Cloud Agent、Canvas、语音、浏览器工具 — 未做
+   - Cloud Agent、Canvas、语音 — 未做
+   - 浏览器工具 — `browser_open` 完成，已测（标题、链接、正文；不执行脚本，不是无头浏览器）
    - Automations — 本地清单与到期检查完成，已测（不自动调用模型，也没有常驻定时进程）
 
 ## 整体完成度（估算，2026-11-17）
 
 | 口径 | 约 % | 说明 |
 |------|------|------|
-| **plan 里「自研 agent-core MVP」** | **~98%** | `npx` 官方 MCP 可连、`npm test`（**50 套**）；随包小模型权重未做 |
+| **plan 里「自研 agent-core MVP」** | **~98%** | `npx` 官方 MCP 可连、`npm test`（**51 套**）；随包小模型权重未做 |
 | **「一个安装包 = OpenCursor」** | **~58%** | fork Chat agent-core + 补丁/流式/Stop + accept→Checkpoint；与原生 Cursor 壳仍两套 |
-| **相对商业 Cursor 全功能** | **~18%** | 缺 Cloud Agent、Tab 产品化、账号网关、Canvas/语音、云端 Automations、外部嵌入模型 |
+| **相对商业 Cursor 全功能** | **~18%** | 缺 Cloud Agent、Tab 产品化、账号网关、Canvas/语音、云端 Automations、无头浏览器 |
 
 fork 自带 Chat/Apply/Checkpoint/MCP，若 **算「可用的类 Cursor 桌面」** 约 **~57%**（**CortexIDE 原生为主**，OpenCursor agent-core 为可选第二引擎）。
 
@@ -241,7 +242,7 @@ fork 自带 Chat/Apply/Checkpoint/MCP，若 **算「可用的类 Cursor 桌面�
 | Web chat mock | `npm run test:web-chat-mock` | 无 Key |
 | CI | `.github/workflows/test.yml` | `build:agent-cli` + `npm test` |
 | Web 审核写 | `npm run test:web-patch-review` | mock `review` |
-| 一键 | `npm test` | `typecheck` + **50 套**（`rg`/bash **可选**，缺则 skip 对应子测；`npx` MCP 无网络则跳过） |
+| 一键 | `npm test` | `typecheck` + **51 套**（`rg`/bash **可选**，缺则 skip 对应子测；`npx` MCP 无网络则跳过） |
 | 手测 / 风险清单 | **`QA-NOTES.md`** | Agent 不好测项 |
 | Web `/api/*`、扩展 UI | **无** | 曾手动 curl/Agent 测，无 CI |
 | `explore_codebase` **契约** | `npm run test:explore-contract` | 只读工具白名单，无 LLM |

@@ -39,3 +39,27 @@ export async function webSearch(query: string): Promise<string> {
   url.searchParams.set("q", q);
   return fetchUrlText(url.toString());
 }
+
+/** Page snapshot: status, title, links, and visible text. Not a real browser. */
+export async function browserOpen(url: string): Promise<string> {
+  const raw = await fetchUrlText(url);
+  if (!raw.startsWith("HTTP ")) return raw;
+  const split = raw.indexOf("\n");
+  const status = raw.slice(0, split);
+  const html = raw.slice(split + 1);
+  const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.replace(/\s+/g, " ").trim() || "（无）";
+  const links: string[] = [];
+  for (const hit of html.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
+    if (links.length >= 20) break;
+    const label = hit[2]?.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+    links.push(`${label || hit[1]} ${hit[1]}`);
+  }
+  const text = html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 1500);
+  return `${status}\n标题：${title}\n链接：\n${links.join("\n") || "（无）"}\n正文：${text}`;
+}

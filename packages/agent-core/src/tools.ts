@@ -8,7 +8,7 @@ import { saveTodos, type TodoItem } from "./todos.ts";
 import { stageQuestion, switchMode, type AskOption } from "./session.ts";
 import { replaceNotebookCell } from "./notebook.ts";
 import { awaitShellJob, startShellJob } from "./shellJobs.ts";
-import { fetchUrlText, webSearch } from "./webFetch.ts";
+import { browserOpen, fetchUrlText, webSearch } from "./webFetch.ts";
 import { listSymbols } from "./symbols.ts";
 import { replaceLineRange } from "./editRange.ts";
 import { grepFileIndex, refreshFileIndex } from "./fileIndex.ts";
@@ -304,6 +304,14 @@ export const builtinToolDefs = [
   {
     type: "function" as const,
     function: {
+      name: "browser_open",
+      description: "打开 http(s) 页面，返回状态、标题、链接和可见正文。不是真实浏览器，不执行脚本。",
+      parameters: { type: "object", properties: { url: { type: "string" } }, required: ["url"] },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
       name: "web_search",
       description: "网页搜索。需要环境变量 OPENCURSOR_SEARCH_URL（会附上 ?q=）。",
       parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] },
@@ -423,6 +431,7 @@ export async function runTool(name: string, args: Record<string, string>, ctx: T
   if (name === "web_fetch") {
     return fetchUrlText(args.url || "");
   }
+  if (name === "browser_open") return browserOpen(args.url || "");
   if (name === "web_search") {
     return webSearch(args.query || "");
   }
