@@ -36,6 +36,8 @@ import {
   loadSelection,
   setSelection,
   clearSelection,
+  loadOpenFile,
+  setOpenFile,
   loadAutomations,
   tickAutomations,
   loadTodos,
@@ -160,12 +162,24 @@ const server = createServer(async (req, res) => {
       });
     }
     if (req.method === "GET" && url.pathname === "/api/session") {
-      return send(res, 200, { mode: loadMode(), question: loadQuestion(), goal: loadGoal(), selection: loadSelection() });
+      return send(res, 200, {
+        mode: loadMode(),
+        question: loadQuestion(),
+        goal: loadGoal(),
+        selection: loadSelection(),
+        openFile: loadOpenFile(),
+      });
     }
     if (req.method === "POST" && url.pathname === "/api/session/answer") {
       const body = await readBody(req);
       const text = answerQuestion(String(body.optionId || ""));
       return send(res, 200, { ok: !text.startsWith("没有") && !text.startsWith("选项"), text, question: loadQuestion() });
+    }
+    if (req.method === "POST" && url.pathname === "/api/open-file") {
+      const body = await readBody(req);
+      const rel = relative(workspace, inside(String(body.path || "")));
+      const text = setOpenFile(rel);
+      return send(res, 200, { ok: text.startsWith("正在编辑"), text, openFile: loadOpenFile() });
     }
     if (req.method === "GET" && url.pathname === "/api/symbols") {
       const p = url.searchParams.get("path");

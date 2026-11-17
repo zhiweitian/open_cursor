@@ -97,6 +97,12 @@
         g.textContent = `目标：${s.goal.title}（${s.goal.status}）`;
         el.appendChild(g);
       }
+      if (s.openFile) {
+        const open = document.createElement("p");
+        open.id = "open-file";
+        open.textContent = `正在编辑：${s.openFile}`;
+        el.appendChild(open);
+      }
       if (s.selection && s.selection.path) {
         const line = document.createElement("p");
         line.id = "selection";

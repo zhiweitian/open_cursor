@@ -40,6 +40,7 @@
 | `test:file-index` | ripgrep 文件列表缓存后搜索 |
 | `test:selection` | 编辑器选区写入会话并出现在提示里 |
 | `test:automations` | 保存自动化并判断是否到期 |
+| `test:open-file` | 编辑器当前文件进入会话和提示 |
 | `test:todos` | `todo_write`、状态更新、未完成项进入提示 |
 | `test:session` | `ask_question`、`switch_mode`、记录选择、当前目标 |
 | `test:web-session` | `GET /api/session` 含目标，以及回答 |
