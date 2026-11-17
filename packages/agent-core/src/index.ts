@@ -22,6 +22,7 @@ export { loadTodos, saveTodos, type TodoItem, type TodoStatus } from "./todos.ts
 export { stageQuestion, switchMode, loadQuestion, loadMode, answerQuestion, sessionContext, type AskOption, type StagedQuestion } from "./session.ts";
 export { loadGoal, setGoal, updateGoal, goalContext, type Goal, type GoalStatus } from "./goals.ts";
 export { loadSelection, setSelection, clearSelection, selectionContext, type EditorSelection } from "./selection.ts";
+export { loadAutomations, saveAutomations, dueAutomations, tickAutomations, type Automation } from "./automations.ts";
 export { replaceNotebookCell } from "./notebook.ts";
 export { completeAt } from "./complete.ts";
 export { listSymbols, type SymbolHit } from "./symbols.ts";

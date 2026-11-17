@@ -17,6 +17,7 @@
     <main>
       <div id="thread"></div>
       <div id="session"></div>
+      <div id="automations"></div>
       <div id="patches"></div>
       <div class="opts">
         <label><input id="review" type="checkbox" checked /> 写入需审核（diff）</label>
@@ -113,6 +114,7 @@
         el.appendChild(line);
         el.appendChild(clear);
       }
+      refreshAutomations();
       if (!s.question) return;
       const p = document.createElement("p");
       p.textContent = s.question.prompt;
@@ -131,6 +133,34 @@
         };
         el.appendChild(b);
       }
+    }
+
+    async function refreshAutomations() {
+      const box = $("automations");
+      const data = await (await fetch("/api/automations")).json();
+      box.innerHTML = "";
+      const items = data.automations || [];
+      if (!items.length) return;
+      const line = document.createElement("p");
+      line.id = "automation-list";
+      line.textContent = items.map((item) => `${item.id}: ${item.prompt}`).join("；");
+      const button = document.createElement("button");
+      button.className = "ghost";
+      button.textContent = "检查到期";
+      const due = document.createElement("p");
+      due.id = "automation-due";
+      button.onclick = async () => {
+        const r = await fetch("/api/automations/tick", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: "{}",
+        });
+        const j = await r.json();
+        due.textContent = j.due?.length ? `到期：${j.due.map((item) => item.prompt).join("；")}` : "没有到期";
+      };
+      box.appendChild(line);
+      box.appendChild(button);
+      box.appendChild(due);
     }
 
     function renderPatches(patches) {

@@ -36,6 +36,8 @@ import {
   loadSelection,
   setSelection,
   clearSelection,
+  loadAutomations,
+  tickAutomations,
   answerQuestion,
 } from "@opencursor/agent-core";
 
@@ -134,6 +136,18 @@ const server = createServer(async (req, res) => {
       }
       applyWriteImmediate(run.id, pathRel, content);
       return send(res, 200, { ok: true, runId: run.id });
+    }
+    if (req.method === "GET" && url.pathname === "/api/automations") {
+      return send(res, 200, { automations: loadAutomations() });
+    }
+    if (req.method === "POST" && url.pathname === "/api/automations/tick") {
+      const body = await readBody(req);
+      const now = Number(body.now);
+      const due = tickAutomations(Number.isFinite(now) ? now : Date.now());
+      return send(res, 200, {
+        due: due.map((item) => ({ id: item.id, prompt: item.prompt })),
+        automations: loadAutomations(),
+      });
     }
     if (req.method === "GET" && url.pathname === "/api/session") {
       return send(res, 200, { mode: loadMode(), question: loadQuestion(), goal: loadGoal(), selection: loadSelection() });

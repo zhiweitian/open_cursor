@@ -13,6 +13,7 @@ import { listSymbols } from "./symbols.ts";
 import { replaceLineRange } from "./editRange.ts";
 import { grepFileIndex, refreshFileIndex } from "./fileIndex.ts";
 import { setGoal, updateGoal } from "./goals.ts";
+import { saveAutomations, type Automation } from "./automations.ts";
 import { workspace } from "./workspace.ts";
 
 export { workspace };
@@ -172,6 +173,21 @@ export const builtinToolDefs = [
           merge: { type: "string", description: "true 则合并，否则整表替换" },
         },
         required: ["todos"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "automation_write",
+      description: "保存本地自动化。automations 为 JSON 数组 [{id,prompt,everyMs,enabled}]。everyMs 至少 1000。到期检查不会自动调用模型。merge 为 true 时按 id 合并。",
+      parameters: {
+        type: "object",
+        properties: {
+          automations: { type: "string" },
+          merge: { type: "string", description: "true 则合并，否则整表替换" },
+        },
+        required: ["automations"],
       },
     },
   },
@@ -341,6 +357,17 @@ export async function runTool(name: string, args: Record<string, string>, ctx: T
     if (!Array.isArray(parsed)) return "todos 需要是数组";
     const list = saveTodos(parsed, args.merge === "true");
     return list.map((t) => `${t.status} ${t.id}: ${t.content}`).join("\n") || "(空清单)";
+  }
+  if (name === "automation_write") {
+    let parsed: Automation[] = [];
+    try {
+      parsed = JSON.parse(args.automations || "[]") as Automation[];
+    } catch {
+      return "automations 不是合法 JSON";
+    }
+    if (!Array.isArray(parsed)) return "automations 需要是数组";
+    const list = saveAutomations(parsed, args.merge === "true");
+    return list.map((item) => `${item.id}: ${item.prompt}`).join("\n") || "(空)";
   }
   if (name === "ask_question") {
     let options: AskOption[] = [];
