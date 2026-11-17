@@ -7,6 +7,7 @@ import {
   createRun,
   listRunsSafe,
   rejectPatch,
+  reapplyRun,
   restoreRun,
   setWorkspace,
   stageWrite,
@@ -63,6 +64,9 @@ try {
   restoreRun(run3.id);
   assert("restore snap", readFileSync(join(ws, "snap.txt"), "utf8") === "v1\n");
   assert("restore removes new file", !existsSync(join(ws, "new.txt")));
+  reapplyRun(run3.id);
+  assert("reapply snap", readFileSync(join(ws, "snap.txt"), "utf8") === "v2\n");
+  assert("reapply new file", readFileSync(join(ws, "new.txt"), "utf8") === "n\n");
 } finally {
   rmSync(ws, { recursive: true, force: true });
 }

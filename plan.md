@@ -71,7 +71,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 |---|---|---|
 | **自研内置工具** | 文件 / 终端 / 搜索，稳定可控 | `src/tools.ts` |
 | **MCP（开源协议 + SDK）** | 对齐 Cursor 的 `GetDynamicTools` / 外部集成 | `@modelcontextprotocol/sdk` + `data/mcp.json` |
-| **Cursor SDK（可选）** | 直接跑 Cursor Local Agent 满血工具 | 未接；需要 `CURSOR_API_KEY` |
+| **Cursor SDK（可选）** | 直接跑 Cursor 官方 Agent | **明确不做**。本地 Agent 自研，不需要 `CURSOR_API_KEY` |
 
 ## Cursor Agent 工具 → mini-cursor 对照
 
@@ -163,18 +163,18 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
    - 当前打开文件 — 完成，已测（编辑器打开后聊天页显示，并进入系统提示）
    - 简易 codebase_search — 完成，已测
    - ripgrep 索引封装 — 完成，已测（`refresh_file_index` + `grep_index`；无 rg 时目录遍历）
-   - 符号 / embeddings — 符号行扫描完成；本地词袋向量 `refresh_embeddings` / `embedding_search` 完成，已测。外部嵌入模型 API 未做
+   - 符号 / embeddings — 符号行扫描完成。精确查找用 `grep`。`embedding_search` 只搜当前工作区，按文件内容增量更新。默认词袋；`OPENCURSOR_EMBED_MODEL=bge` 时用本机 `Xenova/bge-small-en-v1.5`，已接加载器。不调用 OpenAI Embeddings
    - 忽略规则 — 完成，已测
 
 5. **编辑器壳（Fork）**
    - **CortexIDE fork** `desktop/cortexide/` — 完成，已测（`npm install` + `compile` + `gulp vscode-darwin-arm64` → `.app`）
-   - agent-core 接入 fork — **大部分完成**（Chat 开关 + IPC + 工具气泡 + diff + 审补丁 + 状态栏；**LLM 流式** stderr→Chat；accept 后重载已开文件；Checkpoint **未统一**）
+   - agent-core 接入 fork — **大部分完成**（Chat 开关 + IPC + 工具气泡 + diff + 审补丁 + 状态栏；**LLM 流式** stderr→Chat；accept 后重载已开文件；网页 Checkpoint 与桌面 Checkpoint 共用同一份 run 快照）
    - 品牌改为 OpenCursor — 部分完成（`product.json` + 部分 UI；需 `npm run desktop:build` 重打 `.app`）
    - VS Code 扩展 `extension/` — 完成，未测（Agent 逻辑调试）
    - Monaco Web — 完成，已测（辅助；左侧符号列表跳转）
 
 6. **Tab 补全**
-   - 低延迟小模型，和聊天模型分开 — 补全通道完成，已测（`OPENCURSOR_COMPLETE_URL`，失败则回退本地前缀）；随包模型权重未做
+   - 低延迟小模型，和聊天模型分开 — 补全通道完成，已测。配置页可一键安装 `Qwen2.5-Coder-0.5B` 到本机，也可填自己的补全 URL（URL 优先）
    - 本地标识符补全 `completeAt` + `POST /api/complete` + Web 编辑器 inline suggest — 完成，已测（无模型）
 
 7. **扩展系统**
@@ -182,13 +182,17 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
    - Skills 扫描注入 — 完成，已测
    - Rules（AGENTS.md / .cursor/rules）— 完成，已测
    - Hooks — 完成（`fireHooks`），已测
-   - Cursor SDK 可选后端 — 未做
+   - Cursor SDK 可选后端 — **明确不做**。本地 Agent 用自研 `agent-core`，不调用 Cursor 官方 SDK
 
 8. **账号与模型网关**
-   - 鉴权、配额、BYOK — 未做（目前是本地配 Key，算 BYOK 雏形，未当产品功能测）
+   - 鉴权、配额 — **明确不做**。本地 IDE，用户自己配 Key
+   - BYOK — 已有雏形（`data/config.json` 存 Key），未单独当产品功能测
 
 9. **完整产品**
-   - Cloud Agent、Canvas、语音 — 未做
+   - Cloud Agent — **明确不做**。那是 Cursor 云端虚拟机里的 Agent；本仓库只在用户电脑上跑
+   - Canvas — **完成，已测**。Agent 用 `canvas_write` 把表、时间线、统计、提示、柱状条、diff 和按钮写到聊天右侧。按钮点击记入下次提问。不是任意 React 源码
+   - 语音 — **暂时不做**，以后可能要。作用是把语音转成聊天输入。若做，优先本机 Whisper 一类小模型，不必上云
+   - 云端定时任务 — **明确不做**。本地 IDE 用现有的手动「跑到期的」
    - 浏览器工具 — `browser_open` 完成，已测（标题、链接、正文；不执行脚本，不是无头浏览器）
    - Automations — 到期检查与 `automation_run` 完成，已测（手动触发，没有常驻定时进程）
 
@@ -196,9 +200,9 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 
 | 口径 | 约 % | 说明 |
 |------|------|------|
-| **plan 里「自研 agent-core MVP」** | **~98%** | `npx` 官方 MCP 可连、`npm test`（**52 套**）；随包小模型权重未做 |
-| **「一个安装包 = OpenCursor」** | **~58%** | fork Chat agent-core + 补丁/流式/Stop + accept→Checkpoint；与原生 Cursor 壳仍两套 |
-| **相对商业 Cursor 全功能** | **~18%** | 缺 Cloud Agent、Tab 产品化、账号网关、Canvas/语音、云端 Automations、无头浏览器 |
+| **plan 里「自研 agent-core MVP」** | **~98%** | `npm test`（**54 套**）。补全模型不随包，配置页可一键下载到本机。Canvas 已接到聊天右侧 |
+| **「一个安装包 = OpenCursor」** | **~58%** | fork Chat agent-core + 补丁/流式/Stop + 与网页共用 Checkpoint |
+| **相对商业 Cursor 全功能** | **~18%** | Canvas 已有。仍缺 Tab 产品化、无头浏览器。语音暂时不做。Cloud Agent、账号配额、Cursor SDK、云端定时任务已决定不做 |
 
 fork 自带 Chat/Apply/Checkpoint/MCP，若 **算「可用的类 Cursor 桌面」** 约 **~57%**（**CortexIDE 原生为主**，OpenCursor agent-core 为可选第二引擎）。
 
@@ -242,7 +246,7 @@ fork 自带 Chat/Apply/Checkpoint/MCP，若 **算「可用的类 Cursor 桌面�
 | Web chat mock | `npm run test:web-chat-mock` | 无 Key |
 | CI | `.github/workflows/test.yml` | `build:agent-cli` + `npm test` |
 | Web 审核写 | `npm run test:web-patch-review` | mock `review` |
-| 一键 | `npm test` | `typecheck` + **52 套**（`rg`/bash **可选**，缺则 skip 对应子测；`npx` MCP 无网络则跳过） |
+| 一键 | `npm test` | `typecheck` + **54 套**（`rg`/bash **可选**，缺则 skip 对应子测；`npx` MCP 无网络则跳过） |
 | 手测 / 风险清单 | **`QA-NOTES.md`** | Agent 不好测项 |
 | Web `/api/*`、扩展 UI | **无** | 曾手动 curl/Agent 测，无 CI |
 | `explore_codebase` **契约** | `npm run test:explore-contract` | 只读工具白名单，无 LLM |
@@ -253,4 +257,4 @@ fork 自带 Chat/Apply/Checkpoint/MCP，若 **算「可用的类 Cursor 桌面�
 | 桌面 fork（Chat 开关、IPC、补丁 UI） | **无** | 需 `buildreact` + 本机 IDE 手测 |
 | 完整 `desktop:build` | **无** | 曾成功打过包，非每次 CI |
 
-后续：随包小模型权重。每做完一项补 `完成` / `已测`。
+后续：补全模型由用户在配置页下载，不放进仓库。每做完一项补 `完成` / `已测`。

@@ -9,6 +9,7 @@ import { fireHooks } from "./hooks.ts";
 import { trimChatMessages } from "./contextBudget.ts";
 import { sessionContext } from "./session.ts";
 import { goalContext } from "./goals.ts";
+import { canvasContext } from "./canvas.ts";
 import { selectionContext } from "./selection.ts";
 import { openFileContext } from "./openFile.ts";
 import { todoContext } from "./todos.ts";
@@ -59,9 +60,9 @@ export async function runAgent(userText: string, opts: AgentOptions = {}) {
     const messages: Msg[] = [
       {
         role: "system",
-        content: `你是本地仓库里的编程助手。工作区：${workspace}。用中文简短回答。改文件前先读。复杂探索可调用 explore_codebase。${
+        content: `你是本地仓库里的编程助手。工作区：${workspace}。用中文简短回答。改文件前先读。精确查找用 grep。自然语言且代码里对不上词时，先 refresh_embeddings 再 embedding_search。复杂探索可调用 explore_codebase。表、时间线、统计和审查结果用 canvas_write 放到聊天旁边。${
           opts.reviewWrites ? "写入会进入待审核补丁，告知用户去界面接受。" : ""
-        }${rulesSystemBlock()}${skillsSystemBlock()}${sessionContext()}${goalContext()}${selectionContext()}${openFileContext()}${todoContext()}`,
+        }${rulesSystemBlock()}${skillsSystemBlock()}${sessionContext()}${goalContext()}${canvasContext()}${selectionContext()}${openFileContext()}${todoContext()}`,
       },
       { role: "user", content: userContent },
     ];

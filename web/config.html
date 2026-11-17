@@ -34,6 +34,15 @@
       <button class="ghost" id="pull">拉取模型列表</button>
     </div>
     <p id="log"></p>
+    <h2>代码补全</h2>
+    <p style="color:var(--mute);font-size:12px">一键安装 Qwen2.5-Coder 0.5B 到本机 <code>data/models</code>。填写地址后优先用你的补全服务，留空则用已安装的本地模型，都没有就用当前文件的前缀匹配。</p>
+    <label>补全 URL</label>
+    <input id="completeUrl" placeholder="http://127.0.0.1:8081/complete" />
+    <div class="row">
+      <button class="ghost" id="saveComplete">保存地址</button>
+      <button class="ghost" id="installComplete">安装到本地</button>
+    </div>
+    <p id="completeLog"></p>
     <h2>MCP 工具（开源 @modelcontextprotocol/sdk）</h2>
     <p style="color:var(--mute);font-size:12px">JSON 配置 stdio MCP 服务；enabled 为 true 时 Agent 会自动挂载工具。</p>
     <textarea id="mcpJson" rows="10" style="font-family:monospace;font-size:12px"></textarea>
@@ -102,6 +111,25 @@
       $("models").innerHTML = ids.map((m) => `<option value="${m}">`).join("");
       log(ids.join("、"), true);
     };
+    async function loadCompletion() {
+      const c = await (await fetch("/api/completion")).json();
+      $("completeUrl").value = c.url || "";
+      const state = c.ready ? "本地模型已安装" : "本地模型未安装";
+      $("completeLog").textContent = `${state}。模型 ${c.model}`;
+    }
+    $("saveComplete").onclick = async () => {
+      const j = await (await fetch("/api/completion", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ url: $("completeUrl").value.trim() }),
+      })).json();
+      $("completeLog").textContent = j.url ? `已保存地址 ${j.url}` : "已清空地址，使用本地模型或前缀匹配";
+    };
+    $("installComplete").onclick = async () => {
+      $("completeLog").textContent = "正在下载到本机，第一次会比较久…";
+      const j = await (await fetch("/api/completion/install", { method: "POST" })).json();
+      $("completeLog").textContent = j.text || (j.ok ? "已安装" : "安装失败");
+    };
     async function loadMcp() {
       $("mcpJson").value = JSON.stringify(await (await fetch("/api/mcp")).json(), null, 2);
     }
@@ -128,6 +156,7 @@
       $("hooksLog").textContent = "Hooks 已保存";
     };
     load();
+    loadCompletion();
     loadMcp();
     loadHooks();
   </script>

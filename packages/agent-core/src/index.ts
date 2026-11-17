@@ -6,6 +6,7 @@ export {
   acceptPatch,
   rejectPatch,
   restoreRun,
+  reapplyRun,
   getRun,
   listRunsSafe,
   stageWrite,
@@ -21,11 +22,22 @@ export { trimChatMessages } from "./contextBudget.ts";
 export { loadTodos, saveTodos, setTodoStatus, todoContext, type TodoItem, type TodoStatus } from "./todos.ts";
 export { stageQuestion, switchMode, loadQuestion, loadMode, answerQuestion, sessionContext, type AskOption, type StagedQuestion } from "./session.ts";
 export { loadGoal, setGoal, updateGoal, goalContext, type Goal, type GoalStatus } from "./goals.ts";
+export { loadCanvas, writeCanvas, recordCanvasAction, canvasContext, type CanvasDoc, type CanvasBlock } from "./canvas.ts";
 export { loadSelection, setSelection, clearSelection, selectionContext, type EditorSelection } from "./selection.ts";
 export { loadOpenFile, setOpenFile, openFileContext } from "./openFile.ts";
 export { loadAutomations, saveAutomations, dueAutomations, tickAutomations, runDueAutomations, type Automation } from "./automations.ts";
 export { replaceNotebookCell } from "./notebook.ts";
 export { completeAt, completeText } from "./complete.ts";
+export {
+  LOCAL_COMPLETION_MODEL,
+  completionUrl,
+  installLocalCompletion,
+  loadCompletionSettings,
+  localCompletionReady,
+  saveCompletionSettings,
+  setCompletionInstallerForTests,
+  setInstalledCompleterForTests,
+} from "./completionSetup.ts";
 export { listSymbols, type SymbolHit } from "./symbols.ts";
 export { replaceLineRange } from "./editRange.ts";
 export { grepFileIndex, parseFileList, refreshFileIndex } from "./fileIndex.ts";

@@ -24,7 +24,7 @@
         <label><input id="review" type="checkbox" checked /> 写入需审核（diff）</label>
         <label><input id="danger" type="checkbox" /> 允许危险 shell</label>
         <label><input id="useMcp" type="checkbox" checked /> 连接 MCP</label>
-        <button class="ghost" id="restore" disabled>回滚本轮</button>
+        <button class="ghost" id="restore" disabled>Checkpoint</button>
       </div>
       <div id="composer">
         <textarea id="q" placeholder="提问… 可用 @src/agent.ts 附带文件上下文"></textarea>
@@ -32,12 +32,14 @@
       </div>
       <p id="log"></p>
     </main>
+    <aside id="canvas" hidden></aside>
   </div>
   <script>
     const $ = (id) => document.getElementById(id);
     const thread = $("thread");
     const patchesEl = $("patches");
     let runId = null;
+    let checkpointAt = "after";
 
     fetch("/api/config").then((r) => r.json()).then((c) => {
       $("badge").textContent = c.hasKey
@@ -270,10 +272,13 @@
         return;
       }
       runId = j.runId;
+      checkpointAt = "after";
       $("restore").disabled = !runId;
+      $("restore").textContent = "Checkpoint";
       add("assistant", j.text, j.steps);
       renderPatches(j.patches);
       refreshSession();
+      refreshCanvas();
       $("log").textContent = "";
     }
 
@@ -282,14 +287,150 @@
       if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) send();
     };
     $("restore").onclick = async () => {
-      if (!runId || !confirm("回滚本轮已改动的文件？")) return;
-      const r = await fetch(`/api/runs/${runId}/restore`, { method: "POST" });
+      if (!runId) return;
+      const back = checkpointAt !== "before";
+      if (back && !confirm("回到这一轮改文件之前？")) return;
+      const r = await fetch(`/api/runs/${runId}/${back ? "restore" : "reapply"}`, { method: "POST" });
       const j = await r.json();
+      checkpointAt = j.at || (back ? "before" : "after");
+      $("restore").textContent = checkpointAt === "before" ? "Checkpoint · 改前" : "Checkpoint";
       $("log").className = "ok";
-      $("log").textContent = `已回滚 ${j.restored} 个路径`;
+      $("log").textContent = checkpointAt === "before"
+        ? `Checkpoint：已回到改前（${j.restored} 个文件）`
+        : `Checkpoint：已回到改后（${j.restored} 个文件）`;
       patchesEl.innerHTML = "";
     };
+
+    async function refreshCanvas() {
+      const { canvas } = await (await fetch("/api/canvas")).json();
+      const box = $("canvas");
+      box.innerHTML = "";
+      if (!canvas) {
+        box.hidden = true;
+        return;
+      }
+      box.hidden = false;
+      const title = document.createElement("h2");
+      title.textContent = canvas.title;
+      box.appendChild(title);
+      for (const block of canvas.blocks || []) renderBlock(box, block);
+      if (canvas.lastAction) {
+        const note = document.createElement("p");
+        note.id = "canvas-action";
+        note.textContent = `已记录：${canvas.lastAction}`;
+        box.appendChild(note);
+      }
+    }
+
+    function renderBlock(box, block) {
+      if (block.type === "h1" || block.type === "h2" || block.type === "h3") {
+        const el = document.createElement(block.type);
+        el.textContent = block.text || "";
+        box.appendChild(el);
+        return;
+      }
+      if (block.type === "text") {
+        const el = document.createElement("p");
+        el.textContent = block.text || "";
+        box.appendChild(el);
+        return;
+      }
+      if (block.type === "stat") {
+        const el = document.createElement("p");
+        el.className = "canvas-stat";
+        el.textContent = `${block.label} ${block.value}`;
+        box.appendChild(el);
+        return;
+      }
+      if (block.type === "callout") {
+        const el = document.createElement("p");
+        el.className = "canvas-callout " + (block.tone || "info");
+        el.textContent = [block.title, block.text].filter(Boolean).join(" ");
+        box.appendChild(el);
+        return;
+      }
+      if (block.type === "table") {
+        const table = document.createElement("table");
+        const head = document.createElement("tr");
+        for (const cell of block.headers || []) {
+          const th = document.createElement("th");
+          th.textContent = cell;
+          head.appendChild(th);
+        }
+        table.appendChild(head);
+        (block.rows || []).forEach((row, i) => {
+          const tr = document.createElement("tr");
+          row.forEach((cell, col) => {
+            const td = document.createElement("td");
+            td.textContent = col === 0 && block.rowTone?.[i] ? `${block.rowTone[i]} ${cell}` : cell;
+            tr.appendChild(td);
+          });
+          table.appendChild(tr);
+        });
+        box.appendChild(table);
+        return;
+      }
+      if (block.type === "timeline" || block.type === "todos") {
+        const list = document.createElement("ul");
+        for (const item of block.items || []) {
+          const li = document.createElement("li");
+          li.textContent = [item.time, item.status, item.title || item.content, item.detail].filter(Boolean).join(" ");
+          list.appendChild(li);
+        }
+        box.appendChild(list);
+        return;
+      }
+      if (block.type === "bars") {
+        const wrap = document.createElement("div");
+        const cap = document.createElement("p");
+        cap.textContent = [block.title, block.unit].filter(Boolean).join(" · ");
+        wrap.appendChild(cap);
+        const max = Math.max(1, ...(block.points || []).map((p) => Number(p.value) || 0));
+        for (const point of block.points || []) {
+          const row = document.createElement("div");
+          row.className = "canvas-bar";
+          const label = document.createElement("span");
+          label.textContent = `${point.label} ${point.value}`;
+          const meter = document.createElement("i");
+          meter.style.width = `${Math.round(((Number(point.value) || 0) / max) * 100)}%`;
+          row.append(label, meter);
+          wrap.appendChild(row);
+        }
+        box.appendChild(wrap);
+        return;
+      }
+      if (block.type === "pills") {
+        const row = document.createElement("p");
+        row.textContent = (block.items || []).map((item) => item.text).filter(Boolean).join(" · ");
+        box.appendChild(row);
+        return;
+      }
+      if (block.type === "diff") {
+        const pre = document.createElement("pre");
+        pre.className = "diff";
+        const mark = { add: "+", del: "-" };
+        pre.textContent = [block.path, ...(block.lines || []).map((line) => `${mark[line.kind] || " "} ${line.text}`)].filter(Boolean).join("\n");
+        box.appendChild(pre);
+        return;
+      }
+      if (block.type === "button") {
+        const button = document.createElement("button");
+        button.className = "ghost";
+        button.textContent = block.label || block.action || "操作";
+        button.onclick = async () => {
+          await fetch("/api/canvas/action", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ action: block.action || block.label }),
+          });
+          refreshCanvas();
+        };
+        box.appendChild(button);
+      }
+    }
+
     refreshSession();
+    refreshCanvas();
   </script>
 </body>
 </html>

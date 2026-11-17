@@ -37,6 +37,7 @@
 | `test:context-budget` | 单次 run 内丢掉过长的旧消息 |
 | `test:complete` | 文件内标识符补全 |
 | `test:complete-model` | 独立补全 URL，失败回退本地 |
+| `test:completion-setup` | 保存补全地址，以及本地安装钩子 |
 | `test:symbols` | function/class/type/const 行扫描 |
 | `test:inline-edit` | 按行替换，含审核模式 |
 | `test:file-index` | ripgrep 文件列表缓存后搜索 |
@@ -44,10 +45,11 @@
 | `test:automations` | 保存自动化并判断是否到期 |
 | `test:automation-run` | 到期项交给 Agent，模拟模型回复 |
 | `test:open-file` | 编辑器当前文件进入会话和提示 |
-| `test:embeddings` | 本地词袋向量建索引并按相似度排序 |
+| `test:embeddings` | 词袋排序，以及未改文件沿用旧向量 |
 | `test:todos` | `todo_write`、状态更新、未完成项进入提示 |
 | `test:session` | `ask_question`、`switch_mode`、记录选择、当前目标 |
 | `test:web-session` | `GET /api/session` 含目标，以及回答 |
+| `test:canvas` | `canvas_write` 落盘表和时间线，按钮动作进入提示 |
 | `test:notebook` | `edit_notebook` 改单个单元格 |
 | `test:shell-jobs` | 后台 shell 启动、等待、拦截危险命令 |
 | `test:web-fetch` | 本地 HTTP `web_fetch`，拒绝 file URL |
@@ -89,7 +91,7 @@
 - OpenCursor **tool** 流式状态与原生 `toolInfo` 结构不完全一致（UI 靠 `llmInfo.toolCallSoFar`）。
 - **SIGKILL** 后 agent 子进程 exit code 因平台可能不是 137（已同时看 `signal`）。
 - **`npm test`** 依赖本机 **`rg`（ripgrep）** 与 **`bash`**（`grep` / `codebase_search` / `shell` 工具测）。
-- 补丁 **Checkpoint**：accept 时写 `tool_edit`（Chat 气泡 `patchPath` 或命令面板 `result.patch.path`）；回滚 UX 需手测清单 **A** 确认。
+- 补丁 **Checkpoint**：网页按钮和桌面 Chat 的 Checkpoint 都调用同一份 `restore` / `reapply`（`data/runs` 里改前内容）。桌面需重新 `compile` 后才看得到新行。
 - `llm.ts` stream 对 **thinking** 模型未单独测。
 - fork 内 **本地 TS 补丁** 与上游 merge 可能冲突。
 

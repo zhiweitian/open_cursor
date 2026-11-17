@@ -18,6 +18,8 @@ export type Run = {
   createdAt: string;
   snapshot: Record<string, string | null>;
   patches: Patch[];
+  /** true 表示文件已回到这一轮改动之前 */
+  restored?: boolean;
 };
 
 const runsDir = () => join(workspace, "data", "runs");
@@ -89,6 +91,7 @@ export function acceptPatch(runId: string, patchId: string) {
     writeFileSync(abs, p.newContent);
   }
   p.status = "accepted";
+  run.restored = false;
   save(run);
   return p;
 }
@@ -116,18 +119,48 @@ export function restoreRun(runId: string) {
   for (const p of run.patches) {
     if (p.status === "pending") p.status = "rejected";
   }
+  run.restored = true;
   save(run);
-  return { restored: Object.keys(run.snapshot).length };
+  const paths = Object.keys(run.snapshot);
+  return { restored: paths.length, paths, at: "before" as const };
+}
+
+export function reapplyRun(runId: string) {
+  const run = getRun(runId);
+  const paths: string[] = [];
+  for (const p of run.patches) {
+    if (p.status !== "accepted") continue;
+    const abs = join(workspace, p.path);
+    if (p.newContent === "") {
+      if (existsSync(abs)) unlinkSync(abs);
+    } else {
+      mkdirSync(dirname(abs), { recursive: true });
+      writeFileSync(abs, p.newContent);
+    }
+    paths.push(p.path);
+  }
+  run.restored = false;
+  save(run);
+  return { restored: paths.length, paths, at: "after" as const };
 }
 
 export function applyWriteImmediate(runId: string | undefined, rel: string, newContent: string) {
   if (runId) {
     const run = getRun(runId);
     const abs = join(workspace, rel);
-    if (!(rel in run.snapshot)) {
-      run.snapshot[rel] = existsSync(abs) ? readFileSync(abs, "utf8") : null;
-      save(run);
-    }
+    const existed = existsSync(abs);
+    const oldContent = existed ? readFileSync(abs, "utf8") : "";
+    if (!(rel in run.snapshot)) run.snapshot[rel] = existed ? oldContent : null;
+    run.patches.push({
+      id: randomUUID(),
+      path: rel,
+      oldContent: run.snapshot[rel] ?? "",
+      newContent,
+      diff: unifiedDiff(rel, oldContent, newContent),
+      status: "accepted",
+    });
+    run.restored = false;
+    save(run);
   }
   mkdirSync(dirname(join(workspace, rel)), { recursive: true });
   writeFileSync(join(workspace, rel), newContent);

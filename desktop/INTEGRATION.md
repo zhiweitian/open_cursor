@@ -69,7 +69,7 @@ node dist/opencursor-patches.mjs '{"workspace":"...","op":"list"}'
 |------------|-----------|
 | `explore_codebase` 产品化 | 子 Agent 结果在 Chat 展示 |
 | MCP 与 Cortex MCP 配置合并 | 单页配置 |
-| Checkpoint 深度统一 | accept 后回滚 UX（手测） |
+| Checkpoint | 与网页共用 `data/runs` 快照：`restore` 回到改前，`reapply` 回到改后 |
 | Rules / Skills | 已注入 system，Skills UI 可选 |
 
 ## 开发顺序

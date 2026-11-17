@@ -29,6 +29,9 @@ try {
   const hit = await runTool("embedding_search", { query: "zebra widget pump" }, {});
   const first = hit.split("\n")[0] ?? "";
   assert("ranks matching file", first.includes("a.ts"));
+  writeFileSync(join(ws, "b.ts"), "export function appleBanana() { return 3; }\n");
+  const again = await runTool("refresh_embeddings", {}, {});
+  assert("reuses unchanged file", again.includes("沿用 1"));
   const emptyWs = mkdtempSync(join(tmpdir(), "opencursor-embed-empty-"));
   setWorkspace(emptyWs);
   const none = await runTool("embedding_search", { query: "zebra" }, {});

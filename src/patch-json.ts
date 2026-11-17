@@ -1,19 +1,21 @@
 /**
  * Patch review CLI for desktop fork (list / accept / reject).
  * Usage: node dist/opencursor-patches.mjs '<json>'
- * { workspace, op: 'list'|'accept'|'reject'|'get', runId?, patchId? }
+ * { workspace, op: 'list'|'accept'|'reject'|'get'|'restore'|'reapply', runId?, patchId? }
  */
 import {
   acceptPatch,
   getRun,
   listRunsSafe,
+  reapplyRun,
   rejectPatch,
+  restoreRun,
 } from "@opencursor/agent-core/runs";
 import { setWorkspace } from "@opencursor/agent-core/workspace";
 
 type Payload = {
   workspace: string;
-  op: "list" | "accept" | "reject" | "get";
+  op: "list" | "accept" | "reject" | "get" | "restore" | "reapply";
   runId?: string;
   patchId?: string;
 };
@@ -48,6 +50,14 @@ switch (payload.op) {
   case "reject":
     if (!payload.runId || !payload.patchId) throw new Error("runId and patchId required");
     out = { patch: rejectPatch(payload.runId, payload.patchId) };
+    break;
+  case "restore":
+    if (!payload.runId) throw new Error("runId required");
+    out = restoreRun(payload.runId);
+    break;
+  case "reapply":
+    if (!payload.runId) throw new Error("runId required");
+    out = reapplyRun(payload.runId);
     break;
   default:
     throw new Error(`unknown op`);

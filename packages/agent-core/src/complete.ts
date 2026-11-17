@@ -1,3 +1,5 @@
+import { completeWithInstalled, completionUrl, loadCompletionSettings, localCompletionReady } from "./completionSetup.ts";
+
 const WORD = /[A-Za-z_][A-Za-z0-9_]*/g;
 
 /**
@@ -25,18 +27,20 @@ export function completeAt(text: string, cursor = text.length): string {
   return common.length > prefix.length ? common.slice(prefix.length) : "";
 }
 
-/** Separate from the chat model. Uses OPENCURSOR_COMPLETE_URL when set. */
-export async function completeText(text: string, cursor = text.length): Promise<{ completion: string; via: "model" | "local" }> {
-  const url = process.env.OPENCURSOR_COMPLETE_URL;
+/** URL first, then an installed local model, then the identifier prefix. */
+export async function completeText(text: string, cursor = text.length): Promise<{ completion: string; via: "model" | "installed" | "local" }> {
   const at = Math.max(0, Math.min(cursor, text.length));
+  const prefix = text.slice(0, at);
+  const suffix = text.slice(at);
+  const url = completionUrl();
   if (url) {
     try {
       const res = await fetch(url, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          prefix: text.slice(0, at),
-          suffix: text.slice(at),
+          prefix,
+          suffix,
           model: process.env.OPENCURSOR_COMPLETE_MODEL || "complete",
         }),
         signal: AbortSignal.timeout(2000),
@@ -48,7 +52,15 @@ export async function completeText(text: string, cursor = text.length): Promise<
         }
       }
     } catch {
-      /* local fallback */
+      /* fall through */
+    }
+  }
+  if (loadCompletionSettings().useLocal && localCompletionReady()) {
+    try {
+      const completion = await completeWithInstalled(prefix, suffix);
+      if (completion.trim()) return { completion, via: "installed" };
+    } catch {
+      /* fall through */
     }
   }
   return { completion: completeAt(text, at), via: "local" };

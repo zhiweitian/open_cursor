@@ -14,6 +14,7 @@ import { replaceLineRange } from "./editRange.ts";
 import { grepFileIndex, refreshFileIndex } from "./fileIndex.ts";
 import { refreshEmbeddings, searchEmbeddings } from "./embeddings.ts";
 import { setGoal, updateGoal } from "./goals.ts";
+import { loadCanvas, writeCanvas } from "./canvas.ts";
 import { saveAutomations, runDueAutomations, type Automation } from "./automations.ts";
 import { workspace } from "./workspace.ts";
 
@@ -107,7 +108,7 @@ export const builtinToolDefs = [
     type: "function" as const,
     function: {
       name: "grep",
-      description: "在工作区搜文本（尊重 .gitignore / .cursorignore）",
+      description: "在工作区搜精确文本（函数名、字符串、报错）。尊重 .gitignore / .cursorignore。自然语言且词对不上时改用 embedding_search。",
       parameters: {
         type: "object",
         properties: { pattern: { type: "string" }, glob: { type: "string" } },
@@ -166,7 +167,7 @@ export const builtinToolDefs = [
     type: "function" as const,
     function: {
       name: "refresh_embeddings",
-      description: "用本地词袋向量重建代码索引，写入 data/embeddings.json。不是外部嵌入模型。",
+      description: "按文件内容增量更新工作区向量索引。默认词袋。OPENCURSOR_EMBED_MODEL=bge 时用本机 BGE small，代码不外传。未改动的文件会沿用。",
       parameters: { type: "object", properties: {} },
     },
   },
@@ -174,8 +175,31 @@ export const builtinToolDefs = [
     type: "function" as const,
     function: {
       name: "embedding_search",
-      description: "在本地词袋向量索引里按相似度找代码片段。需先调用 refresh_embeddings。",
+      description: "按意思找代码。精确符号请用 grep。需先 refresh_embeddings。只搜当前工作区索引。",
       parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "canvas_write",
+      description: "把表、时间线、统计、审查结果写到聊天旁边的 Canvas。blocks 为 JSON 数组，type 可用 h1/h2/h3/text/stat/callout/table/timeline/bars/pills/diff/todos/divider/button。大表用这个，不要只贴在回复里。",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          blocks: { type: "string" },
+        },
+        required: ["title", "blocks"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "canvas_read",
+      description: "读取当前 Canvas 的标题、块和用户上次点击的按钮。",
+      parameters: { type: "object", properties: {} },
     },
   },
   {
@@ -380,6 +404,20 @@ function writeContent(rel: string, content: string, ctx: ToolCtx) {
 }
 
 export async function runTool(name: string, args: Record<string, string>, ctx: ToolCtx = {}): Promise<string> {
+  if (name === "canvas_write") {
+    let blocks: unknown[] = [];
+    try {
+      blocks = JSON.parse(args.blocks || "[]") as unknown[];
+    } catch {
+      return "blocks 不是合法 JSON";
+    }
+    return writeCanvas(args.title || "", blocks);
+  }
+  if (name === "canvas_read") {
+    const doc = loadCanvas();
+    if (!doc) return "还没有 Canvas";
+    return JSON.stringify({ title: doc.title, lastAction: doc.lastAction, blocks: doc.blocks });
+  }
   if (name === "todo_write") {
     let parsed: TodoItem[] = [];
     try {
@@ -518,8 +556,9 @@ export async function runTool(name: string, args: Record<string, string>, ctx: T
   }
   if (name === "grep_index") return grepFileIndex(args.pattern || "");
   if (name === "refresh_embeddings") {
-    const built = refreshEmbeddings();
-    return `已建立 ${built.chunks} 个代码片段向量`;
+    const built = await refreshEmbeddings();
+    const note = built.note ? `，${built.note}` : "";
+    return `已建立 ${built.chunks} 个片段（更新 ${built.updated}，沿用 ${built.reused}，${built.embedder}${note}）`;
   }
   if (name === "embedding_search") return searchEmbeddings(args.query || "");
   if (name === "grep") {

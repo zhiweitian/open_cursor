@@ -38,6 +38,24 @@ header .meta { margin-left: auto; color: var(--mute); font-size: 12px; }
 #tree li { cursor: pointer; padding: 2px 0; color: var(--mute); }
 #tree li:hover { color: var(--text); }
 main { flex: 1; max-width: 920px; margin: 0 auto; padding: 16px 20px 40px; }
+#canvas {
+  width: 380px;
+  border-left: 1px solid var(--line);
+  padding: 16px;
+  overflow: auto;
+  max-height: calc(100vh - 49px);
+}
+#canvas h2 { margin: 0 0 12px; font-size: 18px; }
+#canvas h3 { color: var(--text); }
+#canvas table { width: 100%; border-collapse: collapse; font-size: 12px; }
+#canvas th, #canvas td { border-bottom: 1px solid var(--line); text-align: left; padding: 6px 4px; }
+.canvas-stat { font-size: 18px; margin: 8px 0; }
+.canvas-callout { border-left: 3px solid var(--acc); padding-left: 10px; color: var(--mute); }
+.canvas-callout.warning { border-color: #e6b35a; }
+.canvas-callout.danger { border-color: var(--bad); }
+.canvas-callout.success { border-color: var(--ok); }
+.canvas-bar { margin: 6px 0; font-size: 12px; color: var(--mute); }
+.canvas-bar i { display: block; height: 6px; margin-top: 4px; background: var(--acc); }
 .opts { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 12px 0; font-size: 12px; color: var(--mute); }
 .opts label { display: flex; gap: 6px; align-items: center; margin: 0; }
 .patch { border: 1px solid var(--line); border-radius: 10px; margin: 10px 0; overflow: hidden; }

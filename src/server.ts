@@ -22,6 +22,7 @@ import {
   publicConfig,
   rejectPatch,
   restoreRun,
+  reapplyRun,
   runAgent,
   saveConfig,
   saveMcpConfig,
@@ -29,10 +30,18 @@ import {
   workspace,
   applyCliMockLlm,
   completeText,
+  installLocalCompletion,
+  loadCompletionSettings,
+  localCompletionReady,
+  saveCompletionSettings,
+  LOCAL_COMPLETION_MODEL,
   listSymbols,
   loadQuestion,
   loadMode,
   loadGoal,
+  loadCanvas,
+  writeCanvas,
+  recordCanvasAction,
   loadSelection,
   setSelection,
   clearSelection,
@@ -120,6 +129,8 @@ const server = createServer(async (req, res) => {
     if (req.method === "GET" && runMatch) return send(res, 200, getRun(runMatch[1]));
     const restoreMatch = url.pathname.match(/^\/api\/runs\/([^/]+)\/restore$/);
     if (req.method === "POST" && restoreMatch) return send(res, 200, restoreRun(restoreMatch[1]));
+    const reapplyMatch = url.pathname.match(/^\/api\/runs\/([^/]+)\/reapply$/);
+    if (req.method === "POST" && reapplyMatch) return send(res, 200, reapplyRun(reapplyMatch[1]));
     const acceptMatch = url.pathname.match(/^\/api\/runs\/([^/]+)\/patches\/([^/]+)\/accept$/);
     if (req.method === "POST" && acceptMatch) return send(res, 200, acceptPatch(acceptMatch[1], acceptMatch[2]));
     const rejectMatch = url.pathname.match(/^\/api\/runs\/([^/]+)\/patches\/([^/]+)\/reject$/);
@@ -141,6 +152,20 @@ const server = createServer(async (req, res) => {
       }
       applyWriteImmediate(run.id, pathRel, content);
       return send(res, 200, { ok: true, runId: run.id });
+    }
+    if (req.method === "GET" && url.pathname === "/api/canvas") {
+      return send(res, 200, { canvas: loadCanvas() });
+    }
+    if (req.method === "POST" && url.pathname === "/api/canvas") {
+      const body = await readBody(req);
+      const blocks = Array.isArray(body.blocks) ? body.blocks : [];
+      const text = writeCanvas(String(body.title || ""), blocks);
+      return send(res, 200, { ok: text.startsWith("已打开"), text, canvas: loadCanvas() });
+    }
+    if (req.method === "POST" && url.pathname === "/api/canvas/action") {
+      const body = await readBody(req);
+      const text = recordCanvasAction(String(body.action || ""));
+      return send(res, 200, { ok: text.startsWith("已记录"), text, canvas: loadCanvas() });
     }
     if (req.method === "GET" && url.pathname === "/api/todos") {
       return send(res, 200, { todos: loadTodos() });
@@ -208,6 +233,28 @@ const server = createServer(async (req, res) => {
       });
       const selection = loadSelection();
       return send(res, 200, { ok: Boolean(selection), text, selection });
+    }
+    if (req.method === "GET" && url.pathname === "/api/completion") {
+      const settings = loadCompletionSettings();
+      return send(res, 200, { ...settings, ready: localCompletionReady(), model: LOCAL_COMPLETION_MODEL });
+    }
+    if (req.method === "POST" && url.pathname === "/api/completion") {
+      const body = await readBody(req);
+      const settings = saveCompletionSettings({
+        url: String(body.url ?? loadCompletionSettings().url),
+        useLocal: body.useLocal === undefined ? loadCompletionSettings().useLocal : Boolean(body.useLocal),
+      });
+      return send(res, 200, { ...settings, ready: localCompletionReady(), model: LOCAL_COMPLETION_MODEL });
+    }
+    if (req.method === "POST" && url.pathname === "/api/completion/install") {
+      try {
+        const text = await installLocalCompletion();
+        const settings = loadCompletionSettings();
+        return send(res, 200, { ok: true, text, ...settings, ready: localCompletionReady(), model: LOCAL_COMPLETION_MODEL });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return send(res, 200, { ok: false, text: message, ready: localCompletionReady() });
+      }
     }
     if (req.method === "POST" && url.pathname === "/api/complete") {
       const body = await readBody(req);
