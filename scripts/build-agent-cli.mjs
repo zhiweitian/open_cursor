@@ -25,4 +25,13 @@ await esbuild.build({
   outfile: "dist/opencursor-patches.mjs",
 });
 
-console.log("built dist/opencursor-agent.cjs + dist/opencursor-patches.mjs");
+await esbuild.build({
+  ...shared,
+  format: "esm",
+  packages: "bundle",
+  external: ["@huggingface/transformers"],
+  entryPoints: ["src/complete-json.ts"],
+  outfile: "dist/opencursor-complete.mjs",
+});
+
+console.log("built dist/opencursor-agent.cjs + dist/opencursor-patches.mjs + dist/opencursor-complete.mjs");

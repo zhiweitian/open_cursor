@@ -1,8 +1,9 @@
 /**
  * Patch review CLI for desktop fork (list / accept / reject).
  * Usage: node dist/opencursor-patches.mjs '<json>'
- * { workspace, op: 'list'|'accept'|'reject'|'get'|'restore'|'reapply', runId?, patchId? }
+ * { workspace, op: 'list'|'accept'|'reject'|'get'|'restore'|'reapply'|'canvas'|'canvas-action', runId?, patchId?, action? }
  */
+import { loadCanvas, recordCanvasAction } from "@opencursor/agent-core/canvas";
 import {
   acceptPatch,
   getRun,
@@ -15,9 +16,10 @@ import { setWorkspace } from "@opencursor/agent-core/workspace";
 
 type Payload = {
   workspace: string;
-  op: "list" | "accept" | "reject" | "get" | "restore" | "reapply";
+  op: "list" | "accept" | "reject" | "get" | "restore" | "reapply" | "canvas" | "canvas-action";
   runId?: string;
   patchId?: string;
+  action?: string;
 };
 
 const raw = process.argv[2];
@@ -58,6 +60,12 @@ switch (payload.op) {
   case "reapply":
     if (!payload.runId) throw new Error("runId required");
     out = reapplyRun(payload.runId);
+    break;
+  case "canvas":
+    out = { canvas: loadCanvas() };
+    break;
+  case "canvas-action":
+    out = { text: recordCanvasAction(payload.action || ""), canvas: loadCanvas() };
     break;
   default:
     throw new Error(`unknown op`);

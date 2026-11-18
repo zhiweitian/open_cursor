@@ -169,12 +169,12 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 5. **编辑器壳（Fork）**
    - **CortexIDE fork** `desktop/cortexide/` — 完成，已测（`npm install` + `compile` + `gulp vscode-darwin-arm64` → `.app`）
    - agent-core 接入 fork — **大部分完成**（Chat 开关 + IPC + 工具气泡 + diff + 审补丁 + 状态栏；**LLM 流式** stderr→Chat；accept 后重载已开文件；网页 Checkpoint 与桌面 Checkpoint 共用同一份 run 快照）
-   - 品牌改为 OpenCursor — 部分完成（`product.json` + 部分 UI；需 `npm run desktop:build` 重打 `.app`）
+   - 品牌改为 OpenCursor — 产品名、反馈地址、设置页 / 欢迎页 / 命令面板文案已改。安装包已打出：`desktop/VSCode-darwin-arm64/OpenCursor.app`。Dock 图标仍是上游的
    - VS Code 扩展 `extension/` — 完成，未测（Agent 逻辑调试）
    - Monaco Web — 完成，已测（辅助；左侧符号列表跳转）
 
 6. **Tab 补全**
-   - 低延迟小模型，和聊天模型分开 — 补全通道完成，已测。配置页可一键安装 `Qwen2.5-Coder-0.5B` 到本机，也可填自己的补全 URL（URL 优先）
+   - 低延迟小模型，和聊天模型分开 — 补全通道完成，已测。网页可一键安装或填 URL。桌面编辑器 Tab 优先走同一通道（`dist/opencursor-complete.mjs`），没有结果再用 Cortex 原来的补全
    - 本地标识符补全 `completeAt` + `POST /api/complete` + Web 编辑器 inline suggest — 完成，已测（无模型）
 
 7. **扩展系统**
@@ -190,7 +190,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 
 9. **完整产品**
    - Cloud Agent — **明确不做**。那是 Cursor 云端虚拟机里的 Agent；本仓库只在用户电脑上跑
-   - Canvas — **完成，已测**。Agent 用 `canvas_write` 把表、时间线、统计、提示、柱状条、diff 和按钮写到聊天右侧。按钮点击记入下次提问。不是任意 React 源码
+   - Canvas — **完成，已测**。网页聊天右侧，以及桌面 Chat 底部。Agent 用 `canvas_write`。按钮点击记入下次提问。不是任意 React 源码
    - 语音 — **暂时不做**，以后可能要。作用是把语音转成聊天输入。若做，优先本机 Whisper 一类小模型，不必上云
    - 云端定时任务 — **明确不做**。本地 IDE 用现有的手动「跑到期的」
    - 浏览器工具 — `browser_open` 完成，已测（标题、链接、正文；不执行脚本，不是无头浏览器）

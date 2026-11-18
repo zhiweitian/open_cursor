@@ -6,7 +6,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./runs": "./src/runs.ts",
-    "./workspace": "./src/workspace.ts"
+    "./workspace": "./src/workspace.ts",
+    "./canvas": "./src/canvas.ts",
+    "./complete": "./src/complete.ts"
   },
   "dependencies": {
     "@huggingface/transformers": "^4.3.2",

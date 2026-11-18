@@ -14,6 +14,7 @@ type Payload = {
   allowDangerousShell?: boolean;
   deepseekApiKey?: string;
   deepseekEndpoint?: string;
+  deepseekModel?: string;
 };
 
 const raw = process.argv[2];
@@ -47,6 +48,7 @@ void (async () => {
     syncDeepSeekConfigFromEnv({
       apiKey: payload.deepseekApiKey,
       endpoint: payload.deepseekEndpoint,
+      model: payload.deepseekModel,
     });
   }
   const run = createRun();

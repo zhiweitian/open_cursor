@@ -1,4 +1,5 @@
 export { runAgent, pingModel, type AgentOptions, type Step } from "./agent.ts";
+export { agentSystemPrompt } from "./systemPrompt.ts";
 export { getConfig, saveConfig, publicConfig, setConfigOverride, presets, modelsUrl, type AppConfig } from "./config.ts";
 export { setWorkspace, workspace } from "./workspace.ts";
 export {

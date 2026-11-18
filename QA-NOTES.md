@@ -34,6 +34,7 @@
 | `test:explore-contract` | `EXPLORE_READ_ONLY_TOOLS` 与 builtin 对齐 |
 | `test:explore-loop` | `explore_codebase` 多轮 + mock LLM |
 | `test:skills-rules` | skills + AGENTS.md + `.cursor/rules` |
+| `test:system-prompt` | 系统提示含模型名、工具名、git 规则、审核写入 |
 | `test:context-budget` | 单次 run 内丢掉过长的旧消息 |
 | `test:complete` | 文件内标识符补全 |
 | `test:complete-model` | 独立补全 URL，失败回退本地 |
@@ -91,7 +92,8 @@
 - OpenCursor **tool** 流式状态与原生 `toolInfo` 结构不完全一致（UI 靠 `llmInfo.toolCallSoFar`）。
 - **SIGKILL** 后 agent 子进程 exit code 因平台可能不是 137（已同时看 `signal`）。
 - **`npm test`** 依赖本机 **`rg`（ripgrep）** 与 **`bash`**（`grep` / `codebase_search` / `shell` 工具测）。
-- 补丁 **Checkpoint**：网页按钮和桌面 Chat 的 Checkpoint 都调用同一份 `restore` / `reapply`（`data/runs` 里改前内容）。桌面需重新 `compile` 后才看得到新行。
+- 补丁 **Checkpoint**：网页按钮和桌面 Chat 的 Checkpoint 都调用同一份 `restore` / `reapply`。
+- 桌面 Tab 和 Canvas 走 `dist/opencursor-complete.mjs` 与补丁 CLI 的 `canvas`。要在已打开的 `.app` 里看到，需要重新 `desktop:build`，并先 `npm run build:agent-cli`。
 - `llm.ts` stream 对 **thinking** 模型未单独测。
 - fork 内 **本地 TS 补丁** 与上游 merge 可能冲突。
 

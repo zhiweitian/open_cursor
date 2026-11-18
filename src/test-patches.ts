@@ -48,9 +48,9 @@ try {
 
   mkdirSync(join(ws, "data"), { recursive: true });
   writeFileSync(join(ws, "data", "config.json"), JSON.stringify({ apiKey: "existing" }));
-  syncDeepSeekConfigFromEnv({ apiKey: "from-sync" });
-  const cfg = JSON.parse(readFileSync(join(ws, "data", "config.json"), "utf8")) as { apiKey: string };
-  assert("syncDeepSeek skips existing key", cfg.apiKey === "existing");
+  syncDeepSeekConfigFromEnv({ apiKey: "from-sync", model: "m1" });
+  const cfg = JSON.parse(readFileSync(join(ws, "data", "config.json"), "utf8")) as { apiKey: string; model: string };
+  assert("syncDeepSeek writes the key from the desktop", cfg.apiKey === "from-sync" && cfg.model === "m1");
 
   rmSync(join(ws, "data", "config.json"));
   syncDeepSeekConfigFromEnv({ apiKey: "new-key" });
