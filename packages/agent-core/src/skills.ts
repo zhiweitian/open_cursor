@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { isContextOff } from "./contextOff.ts";
 import { workspace } from "./workspace.ts";
 
 type Skill = { name: string; description: string; path: string };
@@ -33,7 +34,7 @@ export function listSkills(): Skill[] {
   const out: Skill[] = [];
   scanDir(join(workspace, ".cursor", "skills"), out);
   scanDir(join(workspace, "skills"), out);
-  return out;
+  return out.filter((skill) => !isContextOff(skill.path));
 }
 
 export function skillsSystemBlock() {

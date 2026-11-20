@@ -21,6 +21,10 @@ await esbuild.build({
   ...shared,
   format: "esm",
   packages: "bundle",
+  external: ["@huggingface/transformers"],
+  banner: {
+    js: 'import { createRequire } from "node:module"; const require = createRequire(import.meta.url);',
+  },
   entryPoints: ["src/patch-json.ts"],
   outfile: "dist/opencursor-patches.mjs",
 });

@@ -15,6 +15,7 @@ type Payload = {
   deepseekApiKey?: string;
   deepseekEndpoint?: string;
   deepseekModel?: string;
+  chatMode?: "agent" | "plan" | "gather" | "normal";
 };
 
 const raw = process.argv[2];
@@ -56,6 +57,7 @@ void (async () => {
   const result = await runAgent(payload.message, {
     runId: payload.runId ?? run.id,
     reviewWrites: payload.reviewWrites ?? true,
+    chatMode: payload.chatMode,
     useMcp: payload.useMcp,
     allowDangerousShell: payload.allowDangerousShell,
     signal: abort.signal,

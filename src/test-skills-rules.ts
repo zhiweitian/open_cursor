@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { listRules, listSkills, setWorkspace } from "@opencursor/agent-core";
+import { listRules, listSkills, setContextOff, setWorkspace } from "@opencursor/agent-core";
 
 let ok = 0;
 let fail = 0;
@@ -34,6 +34,12 @@ try {
   const rules = listRules();
   assert("agents.md rule", rules.some((r) => r.path === "AGENTS.md" && r.bytes > 0));
   assert("cursor rule file", rules.some((r) => r.path.replaceAll("\\", "/").endsWith(".cursor/rules/style.mdc")));
+  setContextOff("AGENTS.md", false);
+  assert("rule off", !listRules().some((r) => r.path === "AGENTS.md"));
+  setContextOff(".cursor/skills/demo/SKILL.md", false);
+  assert("skill off", listSkills().length === 0);
+  setContextOff("AGENTS.md", true);
+  assert("rule on", listRules().some((r) => r.path === "AGENTS.md"));
 } finally {
   rmSync(ws, { recursive: true, force: true });
 }

@@ -94,6 +94,11 @@
 - **`npm test`** 依赖本机 **`rg`（ripgrep）** 与 **`bash`**（`grep` / `codebase_search` / `shell` 工具测）。
 - 补丁 **Checkpoint**：网页按钮和桌面 Chat 的 Checkpoint 都调用同一份 `restore` / `reapply`。
 - 桌面 Tab 和 Canvas 走 `dist/opencursor-complete.mjs` 与补丁 CLI 的 `canvas`。要在已打开的 `.app` 里看到，需要重新 `desktop:build`，并先 `npm run build:agent-cli`。
+- 右侧聊天空状态不再挂 Explain/Refactor 标签和底部历史列表。历史从聊天视图顶栏按钮打开。标签页下面重复的历史 / 设置已去掉。新对话只留在标签页右侧，快捷键仍是 Cmd+Shift+L。聊天页签改成浏览器式：上沿圆角，选中的一页和下面的面板连在一起。附上的文件只在输入框上方显示一排。要重新 `desktop:build` 才能在 `.app` 里看到。
+- 没打开文件夹时，资源管理器展开并显示 Open Folder。上一版侧栏标题会串成 Failed to save 一类句子。
+- 设置里可以存多把 API key，每把 key 多个模型。聊天下拉选择当前模型，请求带上那把 key 的地址。
+- 设置增加 Rules / Skills 页，列出 Agent 会读的 `AGENTS.md`、`.cursor/rules`、`SKILL.md`。命令面板去掉 Explain/Refactor、Background Agent、Privacy Report、Audit Log、Review This File、Detect Errors、网页搜索。用量不再发到 PostHog。Ctrl+K 和 Apply 用当前选中的模型。要在 `.app` 里看到需要重新 `desktop:build`。
+- Canvas 在编辑区单独一页，聊天里只留 Open Canvas。空窗口会打开资源管理器。设置 API 页可填 Tab 补全 URL 和模型名，请求会带上。Rules / Skills 可逐条关掉，写入工作区 `data/context-off.json`。聊天顶栏可重建文件索引。编辑器 Accept / Reject 会接受或拒绝当前文件的聊天补丁。预览待审补丁时，原文件会标出红绿；Accept 清掉标色，Reject 退回原文。新文件仍用对比窗口。Dock 图标换成深色圆环。设置源码只留 API / Rules / Skills / MCP。旧 Plan 的批准、继续、重试和旧工具卡的 Approve 已从界面拿掉。`_runChatAgent` 还在，子 Agent 和后台 Agent 的方法仍调用它。启动不再请求 OpenCortexIDE/cortexide 的 GitHub releases，也不再打开 opencortexide.com。安装包把 Agent 程序放在应用内 `opencursor/`，打开别的文件夹时用这份。状态栏看设置里的 API Key。设置有 Hooks 页，对应 `data/hooks.json` 和 `.cursor/hooks.json`；两者都在时 Agent 只读前者。接受过补丁的一轮可以在聊天里点「回到改前 / 回到改后」。未接受的补丁不会被这次点击回滚。聊天顶栏 Semantic 行重建 `data/embeddings.json`，默认词袋，不调用外部 Embeddings API。Tab 补全 URL 为空且当前文件没有候选项时，会用 `rg` 在其它源文件里补标识符，限时 200ms。工具调用后的下一轮请求会带上 `tool_calls[].type = function`，否则 DeepSeek 会报 `messages[n]: missing field type`。
 - `llm.ts` stream 对 **thinking** 模型未单独测。
 - fork 内 **本地 TS 补丁** 与上游 merge 可能冲突。
 

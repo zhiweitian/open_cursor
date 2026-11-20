@@ -1,6 +1,56 @@
 # OpenCursor 计划
 
-目标：**开源版 Cursor** — 以 VS Code 为编辑器壳，Agent / MCP / 自配模型 API 由 OpenCursor 提供。
+目标：提供和 Cursor 相似的体验。在本机用上 Cursor 那类 Agent / Skill / 工具，模型请求走自己的 API Key，不经过 Cursor 中转，不付 Cursor 的路由费。编辑器壳是 VS Code fork；Agent、模式、MCP、补丁由 OpenCursor 提供。不做 Cursor 云 Agent，也不接它的闭源 Tab 云和 Composer 后端。
+
+## 收口（2026-11-19）
+
+设置页左侧当时只有 API 和 MCP。下面这些页在代码里，但点不开：模型目录、本地模型发现、Ollama 向导、供应商列表、按功能另选模型、路由策略、YOLO、匿名上报、从别的编辑器导入、替换系统提示。命令面板里仍能搜到一批 CortexIDE / Void 命令。
+
+### 拿掉
+
+- 命令面板：`Start a Background Agent`、`Run agent-core (Experimental)`、`Show Privacy Report`、`Show Audit Log`、`Rebuild Repo Index`、`Review This File`、`Detect Errors`、`Search the Web`、`Open URL in Reader`、`Log Debug Info`
+- 命令面板和右键：Explain、Refactor、Add Tests、Fix Tests、Docstring、Optimize、Debug、Ask About Selection、Explain This File、Fix Lint Errors、Summarize Changes
+- 匿名用量上报（PostHog）。不再定时上报
+- 设置里的供应商目录、路由、YOLO、Metrics、一键导入、另一段 AI Instructions：入口已不在左侧。死代码下一轮再删，避免一次拆掉两千行设置文件
+- 旧 Cortex 聊天循环：界面已经不走。入口删完再删实现
+
+### 要做
+
+- **Rules / Skills 入口**：设置里能看到并打开 Agent 真正读的文件。Rules 是 `AGENTS.md` 和 `.cursor/rules`。Skills 是 `.cursor/skills/*/SKILL.md` 和 `skills/*/SKILL.md`。先做列出、打开、新建。逐条开关下一轮再做
+- **Ctrl+K、Apply、行内编辑、生成提交信息**：都用当前选中的 Key 和模型，不再用按功能另选的模型
+- **命令改名**：留下的命令从 CortexIDE / Void 改成 OpenCursor
+- **Canvas**：聊天右侧一块面板。没有内容时不占位
+- **Tab 补全**：设置 API 页可填补全 URL 和模型名。URL 空着仍走本地前缀
+- **空窗口**：没打开文件夹时会打开资源管理器，显示 Open Folder
+- **Rules / Skills**：可以逐条关掉。关掉的路径写在工作区 `data/context-off.json`，Agent 不再把它们放进提示
+- **代码库索引**：聊天顶栏显示文件数，点击重建。命令 `OpenCursor: Rebuild file index`。这是文件列表索引，不是向量库
+- **Dock 图标**：深色圆角方块加浅色圆环，替换了 `resources/darwin/code.icns`
+- **编辑器 diff 和聊天补丁**：当前文件或 OpenCursor diff 上的 Accept / Reject 会接受或拒绝同一条聊天补丁，并刷新聊天里的状态
+
+### 本轮状态
+
+- 已打进安装包：Rules/Skills 开关、索引、Canvas 在聊天右侧、空窗口、Tab URL、Dock 深色圆环、编辑器 Accept / Reject 会处理同一条聊天补丁
+- Tab 补全只走 OpenCursor。URL 空着用本地前缀，不再回落到 Cortex FIM
+
+## 下一轮（2026-11-19）
+
+明确不做：Cloud Agent、账号配额、Cursor SDK、云端定时任务、走 Cursor 的模型中转。语音以后再说。
+
+### 先删
+
+1. **设置死代码。** 已从 `Settings.tsx` 删掉模型目录、Ollama、供应商列表、按功能另选模型、路由、YOLO、用量上报、导入导出、旧 AI Instructions、旧的 `.cortexide/rules`。欢迎页只留 API 表单。`ToolApprovalTypeSwitch` 还在，但聊天里不再画出自动批准开关。
+2. **旧聊天入口。** 已拿掉旧 Plan 的批准 / 继续 / 重试 / 跳过，以及旧工具卡的批准按钮。`_runChatAgent` 还在：子 Agent 和后台 Agent 的方法还调用它。界面上已经点不到。整段删掉会牵动工具类型和权限测试，先留着。
+3. **上游更新检查。** 启动后不再请求 OpenCortexIDE/cortexide 的 GitHub releases，也不再打开 opencortexide.com。命令 `OpenCursor: Check for Updates` 只说明本机构建不跟上游版本。
+4. **任意文件夹。** 安装包带上 Agent 程序。工作区里没有 `dist` 时，用应用内的那份。状态栏看设置里有没有 API Key，不再要求工作区里有 `data/config.json`。
+
+### 再做
+
+3. **编辑器行内 diff。** 聊天里点预览，会打开原文件并标出红绿。文件内容和补丁原文一致才走这条；新文件或编辑器里已经改过，仍用对比窗口。Accept 清掉标色并写入磁盘，Reject 把编辑器退回原文。
+4. **Hooks 设置页。** 设置里可以打开或新建 `data/hooks.json`。两个文件都在时，Agent 只用 `data/hooks.json`。事件是 preTool、postTool、agentStop。
+5. **桌面检查点。** 一轮里有已接受的改动时，聊天里出现「回到改前」。点一次把文件退回这一轮之前，再点「回到改后」写回已接受的内容。还没接受补丁时不会回滚。
+6. **语义索引。** 聊天顶栏在文件索引旁边显示片段数。点一下按文件内容增量重建，写入工作区 `data/embeddings.json`。默认词袋；`OPENCURSOR_EMBED_MODEL=bge` 时用本机 BGE。命令 `OpenCursor: Rebuild semantic index`。
+7. **Tab 补全。** 补全 URL 为空、当前文件也对不上时，用 `rg` 在工作区其它源文件里找这个标识符。当前文件里已经有候选项时，仍只用当前文件。不调用 Cursor 的补全服务。
+8. **独立 Canvas。** 聊天里不再占右侧一列。有内容时顶栏出现 Open Canvas，在编辑区打开单独一页。命令 `OpenCursor: Open Canvas`。页里可以刷新，点按钮仍会记下动作。
 
 ## 当前对话里 Agent 实际能用的工具
 
@@ -169,12 +219,12 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 5. **编辑器壳（Fork）**
    - **CortexIDE fork** `desktop/cortexide/` — 完成，已测（`npm install` + `compile` + `gulp vscode-darwin-arm64` → `.app`）
    - agent-core 接入 fork — **大部分完成**（Chat 开关 + IPC + 工具气泡 + diff + 审补丁 + 状态栏；**LLM 流式** stderr→Chat；accept 后重载已开文件；网页 Checkpoint 与桌面 Checkpoint 共用同一份 run 快照）
-   - 品牌改为 OpenCursor — 产品名、反馈地址、设置页 / 欢迎页 / 命令面板文案已改。安装包已打出：`desktop/VSCode-darwin-arm64/OpenCursor.app`。Dock 图标仍是上游的
+   - 品牌改为 OpenCursor — 产品名、反馈地址、设置页 / 欢迎页 / 命令面板文案已改。安装包已打出：`desktop/VSCode-darwin-arm64/OpenCursor.app`。Dock 图标是深色圆环
    - VS Code 扩展 `extension/` — 完成，未测（Agent 逻辑调试）
    - Monaco Web — 完成，已测（辅助；左侧符号列表跳转）
 
 6. **Tab 补全**
-   - 低延迟小模型，和聊天模型分开 — 补全通道完成，已测。网页可一键安装或填 URL。桌面编辑器 Tab 优先走同一通道（`dist/opencursor-complete.mjs`），没有结果再用 Cortex 原来的补全
+   - 低延迟小模型，和聊天模型分开 — 补全通道完成，已测。网页可一键安装或填 URL。桌面编辑器 Tab 只走 OpenCursor（`dist/opencursor-complete.mjs`），没有结果就不出补全
    - 本地标识符补全 `completeAt` + `POST /api/complete` + Web 编辑器 inline suggest — 完成，已测（无模型）
 
 7. **扩展系统**
@@ -190,7 +240,7 @@ Cursor **没有**官方开源的「整套 Agent 工具 npm 包」。本仓库三
 
 9. **完整产品**
    - Cloud Agent — **明确不做**。那是 Cursor 云端虚拟机里的 Agent；本仓库只在用户电脑上跑
-   - Canvas — **完成，已测**。网页聊天右侧，以及桌面 Chat 底部。Agent 用 `canvas_write`。按钮点击记入下次提问。不是任意 React 源码
+   - Canvas — **完成，已测**。网页和桌面都在聊天右侧。Agent 用 `canvas_write`。按钮点击记入下次提问。不是任意 React 源码
    - 语音 — **暂时不做**，以后可能要。作用是把语音转成聊天输入。若做，优先本机 Whisper 一类小模型，不必上云
    - 云端定时任务 — **明确不做**。本地 IDE 用现有的手动「跑到期的」
    - 浏览器工具 — `browser_open` 完成，已测（标题、链接、正文；不执行脚本，不是无头浏览器）

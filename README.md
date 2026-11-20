@@ -1,6 +1,6 @@
 # OpenCursor
 
-**开源版 Cursor**：VS Code **Fork 桌面 IDE** + 可自配 **OpenAI 兼容 API**（DeepSeek / OpenAI / 自建网关）。
+本地桌面 IDE，提供和 Cursor 相似的体验。Agent、Plan、Skill、MCP 和读写文件、跑命令这些能力在本机跑；模型请求走你自己的 API Key（DeepSeek / OpenAI / 自建网关）。不登录 Cursor，不经过 Cursor 的模型中转，不付那笔路由费。
 
 ## 架构（2025）
 
@@ -71,8 +71,11 @@ npm run build:agent-cli  # 打包 CLI 后再跑 test:cli-bundle / test:agent-cli
 
 ## 目标
 
-- 可审计、可换模型、可 MCP  
-- 不是 Cursor 官方，不含其闭源 Tab 云与 Composer 后端  
+提供和 Cursor 相似的体验：用上 Cursor 里那类后台能力，模型费只付给自己的供应商。
+
+- **要有**：Ask / Gather / Plan / Agent、Skill、MCP、读改文件、跑命令、补丁和 Checkpoint。这些在本机的 agent-core 里执行。
+- **模型**：一个或多个自备 Key，对话里选模型和模式。请求直接打到你填的地址。
+- **不要**：Cursor 账号、Cursor 云 Agent、Cursor 的模型路由和按量加价。不含其闭源 Tab 云和 Composer 后端。
 
 详见 [plan.md](./plan.md)。
 

@@ -4,6 +4,9 @@
  * { workspace, op: 'list'|'accept'|'reject'|'get'|'restore'|'reapply'|'canvas'|'canvas-action', runId?, patchId?, action? }
  */
 import { loadCanvas, recordCanvasAction } from "@opencursor/agent-core/canvas";
+import { loadContextOff, setContextOff } from "../packages/agent-core/src/contextOff.ts";
+import { embeddingStatus, refreshEmbeddings } from "../packages/agent-core/src/embeddings.ts";
+import { loadFileIndex, refreshFileIndex } from "../packages/agent-core/src/fileIndex.ts";
 import {
   acceptPatch,
   getRun,
@@ -16,10 +19,12 @@ import { setWorkspace } from "@opencursor/agent-core/workspace";
 
 type Payload = {
   workspace: string;
-  op: "list" | "accept" | "reject" | "get" | "restore" | "reapply" | "canvas" | "canvas-action";
+  op: "list" | "accept" | "reject" | "get" | "restore" | "reapply" | "canvas" | "canvas-action" | "index" | "index-status" | "embed" | "embed-status" | "context" | "context-set";
   runId?: string;
   patchId?: string;
   action?: string;
+  path?: string;
+  enabled?: boolean;
 };
 
 const raw = process.argv[2];
@@ -36,39 +41,51 @@ if (!payload.workspace?.trim() || !payload.op) {
 
 setWorkspace(payload.workspace);
 
-let out: unknown;
-switch (payload.op) {
-  case "list":
-    out = { runs: listRunsSafe() };
-    break;
-  case "get":
-    if (!payload.runId) throw new Error("runId required");
-    out = { run: getRun(payload.runId) };
-    break;
-  case "accept":
-    if (!payload.runId || !payload.patchId) throw new Error("runId and patchId required");
-    out = { patch: acceptPatch(payload.runId, payload.patchId) };
-    break;
-  case "reject":
-    if (!payload.runId || !payload.patchId) throw new Error("runId and patchId required");
-    out = { patch: rejectPatch(payload.runId, payload.patchId) };
-    break;
-  case "restore":
-    if (!payload.runId) throw new Error("runId required");
-    out = restoreRun(payload.runId);
-    break;
-  case "reapply":
-    if (!payload.runId) throw new Error("runId required");
-    out = reapplyRun(payload.runId);
-    break;
-  case "canvas":
-    out = { canvas: loadCanvas() };
-    break;
-  case "canvas-action":
-    out = { text: recordCanvasAction(payload.action || ""), canvas: loadCanvas() };
-    break;
-  default:
-    throw new Error(`unknown op`);
+async function runOp(): Promise<unknown> {
+  switch (payload.op) {
+    case "list":
+      return { runs: listRunsSafe() };
+    case "get":
+      if (!payload.runId) throw new Error("runId required");
+      return { run: getRun(payload.runId) };
+    case "accept":
+      if (!payload.runId || !payload.patchId) throw new Error("runId and patchId required");
+      return { patch: acceptPatch(payload.runId, payload.patchId) };
+    case "reject":
+      if (!payload.runId || !payload.patchId) throw new Error("runId and patchId required");
+      return { patch: rejectPatch(payload.runId, payload.patchId) };
+    case "restore":
+      if (!payload.runId) throw new Error("runId required");
+      return restoreRun(payload.runId);
+    case "reapply":
+      if (!payload.runId) throw new Error("runId required");
+      return reapplyRun(payload.runId);
+    case "canvas":
+      return { canvas: loadCanvas() };
+    case "canvas-action":
+      return { text: recordCanvasAction(payload.action || ""), canvas: loadCanvas() };
+    case "index": {
+      const index = refreshFileIndex();
+      return { files: index.files.length, builtAt: index.builtAt };
+    }
+    case "index-status": {
+      const index = loadFileIndex();
+      return { files: index?.files.length ?? 0, builtAt: index?.builtAt ?? "" };
+    }
+    case "embed": {
+      const built = await refreshEmbeddings();
+      return { chunks: built.chunks, files: built.updated + built.reused, embedder: built.embedder, builtAt: built.builtAt };
+    }
+    case "embed-status":
+      return embeddingStatus();
+    case "context":
+      return { off: loadContextOff() };
+    case "context-set":
+      if (!payload.path) throw new Error("path required");
+      return { off: setContextOff(payload.path, payload.enabled !== false) };
+    default:
+      throw new Error(`unknown op`);
+  }
 }
 
-console.log(JSON.stringify(out));
+console.log(JSON.stringify(await runOp()));

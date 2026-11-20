@@ -36,7 +36,7 @@ applyOpenAiSseLine(
   acc,
 );
 const msg = streamMessageFromAccum(acc);
-assert("sse tool_calls", msg.tool_calls?.[0]?.function.name === "read");
+assert("sse tool_calls", msg.tool_calls?.[0]?.function.name === "read" && msg.tool_calls?.[0]?.type === "function");
 
 console.log(`\n${ok} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

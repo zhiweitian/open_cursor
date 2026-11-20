@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { cosine, embedText, runTool, setWorkspace } from "@opencursor/agent-core";
+import { cosine, embeddingStatus, embedText, runTool, setWorkspace } from "@opencursor/agent-core";
 
 let ok = 0;
 let fail = 0;
@@ -26,6 +26,8 @@ try {
   writeFileSync(join(ws, "b.ts"), "export function appleBanana() { return 2; }\n");
   const built = await runTool("refresh_embeddings", {}, {});
   assert("built", built.includes("2"));
+  const status = embeddingStatus();
+  assert("status has chunks", status.chunks > 0 && status.embedder === "hash" && !!status.builtAt);
   const hit = await runTool("embedding_search", { query: "zebra widget pump" }, {});
   const first = hit.split("\n")[0] ?? "";
   assert("ranks matching file", first.includes("a.ts"));

@@ -9,12 +9,12 @@ import { writeSync } from "node:fs";
 import { completeText } from "@opencursor/agent-core/complete";
 import { setWorkspace } from "@opencursor/agent-core/workspace";
 
-type Payload = { id?: string; workspace: string; text: string; cursor?: number };
+type Payload = { id?: string; workspace: string; text: string; cursor?: number; url?: string; model?: string };
 
 async function one(payload: Payload) {
   setWorkspace(payload.workspace);
   const cursor = Number.isFinite(payload.cursor) ? Number(payload.cursor) : payload.text.length;
-  const result = await completeText(payload.text, cursor);
+  const result = await completeText(payload.text, cursor, { url: payload.url, model: payload.model });
   return { id: payload.id, ...result };
 }
 

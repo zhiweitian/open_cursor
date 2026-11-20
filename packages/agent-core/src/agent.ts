@@ -34,7 +34,47 @@ export async function pingModel() {
   return (msg.content || "").trim();
 }
 
+export type AgentChatMode = "agent" | "plan" | "gather" | "normal";
+
+const READ_ONLY_TOOLS = new Set([
+  "read_file",
+  "glob_file_search",
+  "list_dir",
+  "grep",
+  "refresh_file_index",
+  "grep_index",
+  "read_lints",
+  "codebase_search",
+  "refresh_embeddings",
+  "embedding_search",
+  "canvas_read",
+  "list_symbols",
+  "explore_codebase",
+  "web_fetch",
+  "web_search",
+]);
+
+export function toolsForChatMode<T extends { function: { name: string } }>(mode: AgentChatMode | undefined, tools: T[]): T[] {
+  if (!mode || mode === "agent") return tools;
+  if (mode === "normal") return [];
+  const allow = new Set(READ_ONLY_TOOLS);
+  if (mode === "plan") {
+    allow.add("canvas_write");
+    allow.add("todo_write");
+    allow.add("ask_question");
+  }
+  return tools.filter((tool) => allow.has(tool.function.name));
+}
+
+export function chatModeInstruction(mode: AgentChatMode | undefined): string {
+  if (mode === "normal") return "\n\n当前模式：Ask。只回答问题。不要调用工具，不要改文件。";
+  if (mode === "gather") return "\n\n当前模式：Gather。只读取代码来回答。不要改文件，不要运行命令。";
+  if (mode === "plan") return "\n\n当前模式：Plan。先写出实现计划，然后停下来等用户确认。不要改文件，不要运行命令。";
+  return "\n\n当前模式：Agent。可以读文件、改文件、运行命令。";
+}
+
 export type AgentOptions = ToolCtx & {
+  chatMode?: AgentChatMode;
   useMcp?: boolean;
   signal?: AbortSignal;
   onStep?: (step: Step) => void | Promise<void>;
@@ -54,14 +94,15 @@ function abortedResult(steps: Step[], opts: AgentOptions, mcpSummary: ReturnType
 export async function runAgent(userText: string, opts: AgentOptions = {}) {
   const userContent = expandAtMentions(userText);
   const hub = new McpHub();
-  const useMcp = opts.useMcp !== false;
+  const mode = opts.chatMode || "agent";
+  const useMcp = opts.useMcp !== false && mode === "agent";
   try {
     if (useMcp) await hub.connectAll();
-    const tools = [...builtinToolDefs, ...hub.openAiTools()];
+    const tools = toolsForChatMode(mode, [...builtinToolDefs, ...hub.openAiTools()]);
     const messages: Msg[] = [
       {
         role: "system",
-        content: `${agentSystemPrompt(!!opts.reviewWrites)}${rulesSystemBlock()}${skillsSystemBlock()}${sessionContext()}${goalContext()}${canvasContext()}${selectionContext()}${openFileContext()}${todoContext()}`,
+        content: `${agentSystemPrompt(!!opts.reviewWrites)}${chatModeInstruction(mode)}${rulesSystemBlock()}${skillsSystemBlock()}${sessionContext()}${goalContext()}${canvasContext()}${selectionContext()}${openFileContext()}${todoContext()}`,
       },
       { role: "user", content: userContent },
     ];

@@ -16,6 +16,8 @@ export {
 export { getMcpConfig, saveMcpConfig, McpHub } from "./mcp.ts";
 export { listRules } from "./rules.ts";
 export { listSkills } from "./skills.ts";
+export { loadContextOff, setContextOff } from "./contextOff.ts";
+export { loadFileIndex } from "./fileIndex.ts";
 export { inside, runTool, builtinToolDefs, isDangerousShell } from "./tools.ts";
 export { buildTree } from "./tree.ts";
 export { expandAtMentions } from "./context.ts";
@@ -28,7 +30,7 @@ export { loadSelection, setSelection, clearSelection, selectionContext, type Edi
 export { loadOpenFile, setOpenFile, openFileContext } from "./openFile.ts";
 export { loadAutomations, saveAutomations, dueAutomations, tickAutomations, runDueAutomations, type Automation } from "./automations.ts";
 export { replaceNotebookCell } from "./notebook.ts";
-export { completeAt, completeText } from "./complete.ts";
+export { completeAt, completeInWorkspace, completeText } from "./complete.ts";
 export {
   LOCAL_COMPLETION_MODEL,
   completionUrl,
@@ -42,7 +44,7 @@ export {
 export { listSymbols, type SymbolHit } from "./symbols.ts";
 export { replaceLineRange } from "./editRange.ts";
 export { grepFileIndex, parseFileList, refreshFileIndex } from "./fileIndex.ts";
-export { embedText, cosine, refreshEmbeddings, searchEmbeddings } from "./embeddings.ts";
+export { embedText, cosine, embeddingStatus, refreshEmbeddings, searchEmbeddings } from "./embeddings.ts";
 export { browserOpen, fetchUrlText, webSearch } from "./webFetch.ts";
 export { syncDeepSeekConfigFromEnv } from "./syncConfigFromCortexide.ts";
 export { EXPLORE_READ_ONLY_TOOLS } from "./explore-agent.ts";

@@ -32,6 +32,15 @@ echo "==> gulp $GULP（约 15–30 分钟）"
 npm run gulp "$GULP"
 OUT="$CD/../VSCode-darwin-arm64"
 [[ -d "$ROOT/desktop/VSCode-darwin-arm64" ]] && OUT="$ROOT/desktop/VSCode-darwin-arm64"
+CLI_DIR="$OUT/${APP_NAME}.app/Contents/Resources/app/opencursor"
+mkdir -p "$CLI_DIR"
+for f in opencursor-agent.cjs opencursor-patches.mjs opencursor-complete.mjs; do
+  if [[ -f "$ROOT/dist/$f" ]]; then
+    cp "$ROOT/dist/$f" "$CLI_DIR/$f"
+  else
+    echo "==> 缺少 $ROOT/dist/$f ，打开别的文件夹时聊天会找不到 Agent。先跑 npm run build:agent-cli"
+  fi
+done
 echo ""
 echo "完成。应用目录："
 echo "  $OUT/${APP_NAME}.app"

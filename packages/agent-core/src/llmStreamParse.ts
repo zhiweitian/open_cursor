@@ -1,7 +1,7 @@
 export type ChatMsg = {
   role: string;
   content?: string | null;
-  tool_calls?: { id: string; function: { name: string; arguments: string } }[];
+  tool_calls?: { id: string; type?: "function"; function: { name: string; arguments: string } }[];
   tool_call_id?: string;
   name?: string;
 };
@@ -58,12 +58,13 @@ export function applyOpenAiSseLine(
 }
 
 export function streamMessageFromAccum(acc: StreamAccum): ChatMsg {
-  const msg: ChatMsg = { role: acc.role, content: acc.fullContent || null };
+  const msg: ChatMsg = { role: acc.role, content: acc.fullContent || (acc.toolCalls.size ? "" : null) };
   if (acc.toolCalls.size) {
     msg.tool_calls = [...acc.toolCalls.entries()]
       .sort(([a], [b]) => a - b)
       .map(([, tc]) => ({
         id: tc.id || `call_${Math.random().toString(36).slice(2)}`,
+        type: "function" as const,
         function: { name: tc.name, arguments: tc.arguments || "{}" },
       }));
   }

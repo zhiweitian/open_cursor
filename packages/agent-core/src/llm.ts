@@ -32,6 +32,10 @@ function emitMockStreamDeltas(text: string, onDelta?: (delta: string, fullText: 
 
 function normalizeMessage(msg: ChatMsg & { reasoning_content?: string }): ChatMsg {
   if (!msg.content && msg.reasoning_content) msg.content = msg.reasoning_content;
+  if (msg.tool_calls?.length) {
+    if (!msg.content) msg.content = "";
+    msg.tool_calls = msg.tool_calls.map((call) => ({ ...call, type: "function" as const }));
+  }
   return msg;
 }
 

@@ -19,7 +19,7 @@ export type EmbeddingChunk = {
 };
 
 type FileEntry = { hash: string; chunks: EmbeddingChunk[] };
-type Store = { embedder: string; files: Record<string, FileEntry> };
+type Store = { embedder: string; files: Record<string, FileEntry>; builtAt?: string };
 
 function storePath() {
   return join(workspace, "data", "embeddings.json");
@@ -48,6 +48,13 @@ export function loadEmbeddingChunks(): EmbeddingChunk[] {
   return Object.values(store.files).flatMap((file) => file.chunks);
 }
 
+export function embeddingStatus(): { chunks: number; files: number; embedder: string; builtAt: string } {
+  const store = loadStore();
+  if (!store) return { chunks: 0, files: 0, embedder: "", builtAt: "" };
+  const chunks = Object.values(store.files).reduce((n, file) => n + file.chunks.length, 0);
+  return { chunks, files: Object.keys(store.files).length, embedder: store.embedder, builtAt: store.builtAt ?? "" };
+}
+
 function chunksFor(path: string, text: string, vectors: number[][]): EmbeddingChunk[] {
   const lines = text.split("\n");
   const chunks: EmbeddingChunk[] = [];
@@ -67,7 +74,7 @@ function chunksFor(path: string, text: string, vectors: number[][]): EmbeddingCh
   return chunks;
 }
 
-export async function refreshEmbeddings(): Promise<{ chunks: number; reused: number; updated: number; embedder: string; note: string }> {
+export async function refreshEmbeddings(): Promise<{ chunks: number; reused: number; updated: number; embedder: string; note: string; builtAt: string }> {
   const embedder = await getEmbedder();
   const prev = loadStore();
   const same = prev?.embedder === embedder.id ? prev.files : {};
@@ -106,9 +113,10 @@ export async function refreshEmbeddings(): Promise<{ chunks: number; reused: num
     chunks += next[file].chunks.length;
   }
   mkdirSync(dirname(storePath()), { recursive: true });
-  const store: Store = { embedder: embedder.id, files: next };
+  const builtAt = new Date().toISOString();
+  const store: Store = { embedder: embedder.id, files: next, builtAt };
   writeFileSync(storePath(), JSON.stringify(store));
-  return { chunks, reused, updated, embedder: embedder.id, note: embedder.note };
+  return { chunks, reused, updated, embedder: embedder.id, note: embedder.note, builtAt };
 }
 
 export async function searchEmbeddings(query: string, limit = 5): Promise<string> {
